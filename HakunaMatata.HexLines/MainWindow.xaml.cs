@@ -77,9 +77,10 @@ namespace HakunaMatata.HexLines
                 return;
             cell.IsSelected = value;
             int n = Cells.IndexOf(cell), h = TableHeight, d = ((n / h) & 1) - 1;
-            foreach (int iAvail in new[] { n - h + d, n - h + d + 1, n - 1, n + 1, n + h + d, n + h + d + 1 }
-                .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1))
-                Cells[iAvail].IsAvailable = value && !Cells[iAvail].HasBall;
+            new[] { n - h + d, n - h + d + 1, n - 1, n + 1, n + h + d, n + h + d + 1 }
+                .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1)
+                .Select(i => Cells[i])
+                .ForEach(c => c.IsAvailable = value && !c.HasBall);
         }
     }
 
