@@ -10,6 +10,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{0593F3
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alba.Framework", "Alba.Framework\Alba.Framework\Alba.Framework.csproj", "{62730B23-450C-4B93-8D5C-F7037DB6D263}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{23ADEE0B-B70D-4F42-B445-A80476ED0995}"
+	ProjectSection(SolutionItems) = preProject
+		Build\Common.targets = Build\Common.targets
+		Build\CommonTests.targets = Build\CommonTests.targets
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +28,10 @@ Global
 		{BF7C0FF1-4678-4800-A399-B2E442D894B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF7C0FF1-4678-4800-A399-B2E442D894B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF7C0FF1-4678-4800-A399-B2E442D894B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62730B23-450C-4B93-8D5C-F7037DB6D263}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62730B23-450C-4B93-8D5C-F7037DB6D263}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62730B23-450C-4B93-8D5C-F7037DB6D263}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62730B23-450C-4B93-8D5C-F7037DB6D263}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
