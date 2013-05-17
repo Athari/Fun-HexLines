@@ -1,8 +1,51 @@
-﻿<Window x:Class="HakunaMatata.HexLines.MainWindow"
+﻿<Window x:Class="HakunaMatata.HexLines.MainWindow" x:Name="root"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+        xmlns:hex="clr-namespace:HakunaMatata.HexLines"
+        d:DataContext="{d:DesignInstance hex:Table}"
+        Title="MainWindow" SizeToContent="WidthAndHeight">
+    <Control.Resources>
+        <DataTemplate DataType="{x:Type hex:Cell}">
+            <Canvas>
+                <Polygon x:Name="figCell" Canvas.Left="0" Canvas.Top="0"
+                        Points="15,-26 30,0 15,26 -15,26 -30,0 -15,-26"
+                        Stroke="SteelBlue" StrokeThickness="2" Fill="LightSkyBlue"
+                        MouseDown="FigCell_OnMouseDown"/>
+                <Ellipse x:Name="figBall" Canvas.Left="-20" Canvas.Top="-20"
+                        Width="40" Height="40" IsHitTestVisible="False"
+                        Stroke="DarkSlateGray" StrokeThickness="2" Fill="{Binding BallColorBrush}"/>
+            </Canvas>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="figCell" Property="Fill" Value="DeepSkyBlue"/>
+                </Trigger>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter TargetName="figCell" Property="Fill" Value="Yellow"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsAvailable}" Value="True">
+                    <Setter TargetName="figCell" Property="Fill" Value="LightYellow"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding HasBall}" Value="False">
+                    <Setter TargetName="figBall" Property="Opacity" Value="0"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </Control.Resources>
     <Grid>
-        
+        <ItemsControl ItemsSource="{Binding Cells}" Width="{Binding Width}" Height="{Binding Height}" Margin="8">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas IsItemsHost="True"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style d:DataContext="{d:DesignInstance hex:Cell}">
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+        </ItemsControl>
     </Grid>
 </Window>
