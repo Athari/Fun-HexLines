@@ -7,16 +7,33 @@
         d:DataContext="{d:DesignInstance hex:Table}"
         Title="MainWindow" SizeToContent="WidthAndHeight">
     <Control.Resources>
+
+        <Style TargetType="ItemsControl">
+            <Setter Property="Width" Value="{Binding Width}"/>
+            <Setter Property="Height" Value="{Binding Height}"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <Canvas IsItemsHost="True"/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style d:DataContext="{d:DesignInstance hex:Cell}">
+                        <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                        <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <DataTemplate DataType="{x:Type hex:Cell}">
-            <Canvas>
-                <Polygon x:Name="figCell" Canvas.Left="0" Canvas.Top="0"
-                        Points="15,-26 30,0 15,26 -15,26 -30,0 -15,-26"
-                        Stroke="SteelBlue" StrokeThickness="2" Fill="LightSkyBlue"
-                        MouseDown="FigCell_OnMouseDown"/>
-                <Ellipse x:Name="figBall" Canvas.Left="-20" Canvas.Top="-20"
-                        Width="40" Height="40" IsHitTestVisible="False"
-                        Stroke="DarkSlateGray" StrokeThickness="2" Fill="{Binding BallColorBrush}"/>
-            </Canvas>
+            <Polygon x:Name="figCell"
+                    Points="15,-26 30,0 15,26 -15,26 -30,0 -15,-26"
+                    Stroke="SteelBlue" StrokeThickness="2" Fill="LightSkyBlue"
+                    MouseDown="FigCell_OnMouseDown"/>
             <DataTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter TargetName="figCell" Property="Fill" Value="DeepSkyBlue"/>
@@ -27,26 +44,20 @@
                 <DataTrigger Binding="{Binding IsAvailable}" Value="True">
                     <Setter TargetName="figCell" Property="Fill" Value="LightYellow"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding HasBall}" Value="False">
-                    <Setter TargetName="figBall" Property="Opacity" Value="0"/>
-                </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type hex:Ball}">
+            <Ellipse x:Name="figBall"
+                    Width="40" Height="40" IsHitTestVisible="False"
+                    Stroke="DarkSlateGray" StrokeThickness="2" Fill="{Binding BallColorBrush}"/>
+        </DataTemplate>
+
     </Control.Resources>
+
     <Grid>
-        <ItemsControl ItemsSource="{Binding Cells}" Width="{Binding Width}" Height="{Binding Height}" Margin="8"
-                      MouseDown="LstTable_OnMouseDown">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Canvas IsItemsHost="True"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemContainerStyle>
-                <Style d:DataContext="{d:DesignInstance hex:Cell}">
-                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
-                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
-                </Style>
-            </ItemsControl.ItemContainerStyle>
-        </ItemsControl>
+        <ItemsControl ItemsSource="{Binding Cells}" MouseDown="LstTable_OnMouseDown"/>
+        <ItemsControl ItemsSource="{Binding Balls}" IsHitTestVisible="False"/>
     </Grid>
+
 </Window>
