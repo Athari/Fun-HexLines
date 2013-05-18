@@ -16,7 +16,7 @@ namespace HakunaMatata.HexLines
         public MainWindow ()
         {
             _table.Resize(16, 10);
-            _table.FillBalls(40);
+            _table.FillBalls(100);
 
             DataContext = _table;
             InitializeComponent();
@@ -25,7 +25,14 @@ namespace HakunaMatata.HexLines
         private void FigCell_OnMouseDown (object sender, MouseButtonEventArgs e)
         {
             var cell = (Cell)((FrameworkElement)e.Source).DataContext;
-            _table.SelectedCell = cell;
+            if (cell.IsAvailable) {
+                Ball selectedBall = _table.SelectedCell.Ball;
+                _table.SelectedCell = null;
+                selectedBall.MoveTo(cell);
+            }
+            else if (cell.Ball != null) {
+                _table.SelectedCell = cell;
+            }
             Title = _table.Cells.IndexOf(cell).ToString();
         }
 
@@ -93,29 +100,34 @@ namespace HakunaMatata.HexLines
             if (cell == null)
                 return;
             cell.IsSelected = value;
-            GetNeighbors(cell).ForEach(c => c.IsAvailable = value && c.Ball == null);
+            GetAllFreeNeighbors(cell).ForEach(c => c.IsAvailable = value);
         }
 
-        private IEnumerable<Cell> GetNeighbors (Cell cell)
+        private IEnumerable<Cell> GetAllFreeNeighbors (Cell cell)
         {
-            return GetNeighborsIndices(Cells.IndexOf(cell)).Select(i => Cells[i]);
+            return Cells.IndexOf(cell).TraverseGraph(GetFreeNeighborsIndices).Select(i => Cells[i]).Where(c => c != cell);
         }
 
-        private IEnumerable<int> GetNeighborsIndices (int n)
+        private IEnumerable<Cell> GetFreeNeighbors (Cell cell)
+        {
+            return GetFreeNeighborsIndices(Cells.IndexOf(cell)).Select(i => Cells[i]);
+        }
+
+        private IEnumerable<int> GetFreeNeighborsIndices (int n)
         {
             int h = TableHeight, d = ((n / h) & 1) - 1;
             return new[] { n - h + d, n - h + d + 1, n - 1, n + 1, n + h + d, n + h + d + 1 }
-                .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1);
+                .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1 && Cells[i].Ball == null);
         }
 
         public static double GetCellX (int x, int y)
         {
-            return x * CellXOffset;
+            return 30 + x * CellXOffset;
         }
 
         public static double GetCellY (int x, int y)
         {
-            return y * CellYOffset + ((x & 1) != 0 ? CellYOffset / 2 : 0);
+            return 30 + y * CellYOffset + ((x & 1) != 0 ? CellYOffset / 2 : 0);
         }
     }
 
@@ -150,31 +162,46 @@ namespace HakunaMatata.HexLines
         {
             for (int x = 0; x < w; x++)
                 for (int y = 0; y < h; y++)
-                    yield return new Cell(Table.GetCellX(x, y) + 30, Table.GetCellY(x, y) + 30);
+                    yield return new Cell(Table.GetCellX(x, y), Table.GetCellY(x, y));
         }
     }
 
-    public class Ball
+    public class Ball : ModelBase<Ball>
     {
-        public double X { get; private set; }
-        public double Y { get; private set; }
+        private const int BallCellDelta = -20;
+
+        private double _x;
+        private double _y;
+
         public Color Color { get; private set; }
         public Cell Cell { get; private set; }
 
-        private Ball (int x, int y, Cell cell, Color color)
+        private Ball (Cell cell, Color color)
         {
-            X = Table.GetCellX(x, y) + 10;
-            Y = Table.GetCellY(x, y) + 10;
             Color = color;
-            Cell = cell;
-            cell.Ball = this;
+            MoveTo(cell);
+        }
+
+        public double X
+        {
+            get { return Get(ref _x); }
+            private set { Set(ref _x, value); }
+        }
+
+        public double Y
+        {
+            get { return Get(ref _y); }
+            private set { Set(ref _y, value); }
         }
 
         public void MoveTo (Cell cell)
         {
-            Cell.Ball = null;
+            if (Cell != null)
+                Cell.Ball = null;
             Cell = cell;
             Cell.Ball = this;
+            X = cell.X + BallCellDelta;
+            Y = cell.Y + BallCellDelta;
         }
 
         public Brush BallColorBrush
@@ -186,7 +213,7 @@ namespace HakunaMatata.HexLines
         {
             var rnd = new Random();
             return Enumerable.Range(0, w * h).OrderBy(i => rnd.Next()).Take(count)
-                .Select(ic => new Ball(ic / h, ic % h, cells[ic], new Color {
+                .Select(ic => new Ball(cells[ic], new Color {
                     ScR = (float)rnd.NextDouble(),
                     ScG = (float)rnd.NextDouble(),
                     ScB = (float)rnd.NextDouble(),
