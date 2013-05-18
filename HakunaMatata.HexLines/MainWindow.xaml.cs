@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Alba.Framework.Collections;
 using Alba.Framework.Mvvm.Models;
+using Alba.Framework.Text;
 using Alba.Framework.Wpf;
 using FindPathState = System.Tuple<System.Collections.Generic.IEnumerable<int>, int>;
 
@@ -56,18 +60,33 @@ namespace HakunaMatata.HexLines
 
         private void AnimateMoveBall (Ball ball, Cell fromCell, Cell toCell)
         {
-            IEnumerable<Cell> path = _table.FindPath(fromCell, toCell);
+            List<Cell> path = _table.FindPath(fromCell, toCell).ToList();
             _table.MovingBall = ball;
             ball.StartMoveTo(toCell);
 
             TimeSpan begin = TimeSpan.Zero, d = TimeSpan.FromSeconds(.1);
             _animMovingBall = new Storyboard();
-            foreach (Cell pathItem in path) {
+            /*foreach (Cell pathItem in path) {
                 _animMovingBall
                     .AnimateDouble(d, to: pathItem.X + Ball.BallCellDelta, a: a => a.SetTarget(Canvas.LeftProperty.ToPath()).SetBeginTime(begin))
                     .AnimateDouble(d, to: pathItem.Y + Ball.BallCellDelta, a: a => a.SetTarget(Canvas.TopProperty.ToPath()).SetBeginTime(begin));
                 begin += d;
-            }
+            }*/
+
+            var spath = new StringBuilder("M {0},{1} ".FmtInvariant(fromCell.X + Ball.BallCellDelta, fromCell.Y + Ball.BallCellDelta));
+            Point[] points = path.Select(c => new Point(c.X, c.Y)).ToArray();
+            foreach (Point p in points)
+                spath.AppendFormat(CultureInfo.InvariantCulture, "L {0},{1} ",
+                    p.X + Ball.BallCellDelta, p.Y + Ball.BallCellDelta);
+            var figure = PathFigureCollection.Parse(spath.ToString());
+            var duration = new Duration(new TimeSpan(d.Ticks * points.Length));
+            var a1 = new DoubleAnimationUsingPath { PathGeometry = new PathGeometry { Figures = figure }, Duration = duration, AccelerationRatio = .1, DecelerationRatio = .7 }.SetTarget(Canvas.LeftProperty.ToPath());
+            a1.Source = PathAnimationSource.X;
+            var a2 = new DoubleAnimationUsingPath { PathGeometry = new PathGeometry { Figures = figure }, Duration = duration, AccelerationRatio = .1, DecelerationRatio = .7 }.SetTarget(Canvas.TopProperty.ToPath());
+            a2.Source = PathAnimationSource.Y;
+            _animMovingBall.Children.Add(a1);
+            _animMovingBall.Children.Add(a2);
+
             _animMovingBall.AddCompleted(AnimMove_OnCompleted);
             _animMovingBall.Begin(lstBalls.GetItemContainer(toCell.Ball));
         }
