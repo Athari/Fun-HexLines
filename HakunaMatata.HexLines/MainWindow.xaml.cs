@@ -28,28 +28,35 @@ namespace HakunaMatata.HexLines
         private void FigCell_OnMouseDown (object sender, MouseButtonEventArgs e)
         {
             var cell = e.GetSourceDataContext<Cell>();
-            if (_animMovingBall != null)
+            if (_animMovingBall != null || e.ChangedButton != MouseButton.Left)
                 return;
             if (cell.IsAvailable) {
-                Ball selectedBall = _table.SelectedCell.Ball;
+                Cell selectedCell = _table.SelectedCell;
+                Ball selectedBall = selectedCell.Ball;
                 _table.SelectedCell = null;
-                AnimateMoveBall(selectedBall, cell);
+                AnimateMoveBall(selectedBall, selectedCell, cell);
             }
             else if (cell.Ball != null) {
                 _table.SelectedCell = cell;
             }
         }
 
-        private void AnimateMoveBall (Ball ball, Cell cell)
+        private void AnimateMoveBall (Ball ball, Cell fromCell, Cell toCell)
         {
+            IEnumerable<Cell> path = _table.FindPath(fromCell, toCell);
             _table.MovingBall = ball;
-            ball.StartMoveTo(cell);
+            ball.StartMoveTo(toCell);
 
-            _animMovingBall = new Storyboard()
-                .AnimateDouble(TimeSpan.FromSeconds(1), to: ball.TargetX, a: a => a.SetTarget(Canvas.LeftProperty.ToPath()))
-                .AnimateDouble(TimeSpan.FromSeconds(1), to: ball.TargetY, a: a => a.SetTarget(Canvas.TopProperty.ToPath()))
-                .AddCompleted(AnimMove_OnCompleted);
-            _animMovingBall.Begin(lstBalls.GetItemContainer(cell.Ball));
+            TimeSpan begin = TimeSpan.Zero, d = TimeSpan.FromSeconds(.1);
+            _animMovingBall = new Storyboard();
+            foreach (Cell pathItem in path) {
+                _animMovingBall
+                    .AnimateDouble(d, to: pathItem.X + Ball.BallCellDelta, a: a => a.SetTarget(Canvas.LeftProperty.ToPath()).SetBeginTime(begin))
+                    .AnimateDouble(d, to: pathItem.Y + Ball.BallCellDelta, a: a => a.SetTarget(Canvas.TopProperty.ToPath()).SetBeginTime(begin));
+                begin += d;
+            }
+            _animMovingBall.AddCompleted(AnimMove_OnCompleted);
+            _animMovingBall.Begin(lstBalls.GetItemContainer(toCell.Ball));
         }
 
         private void AnimMove_OnCompleted (object sender, EventArgs e)
@@ -137,6 +144,26 @@ namespace HakunaMatata.HexLines
                 .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1 && Cells[i].Ball == null);
         }
 
+        public IEnumerable<Cell> FindPath (Cell from, Cell to)
+        {
+            return FindPath(Cells.IndexOf(from), Cells.IndexOf(to)).Select(i => Cells[i]);
+        }
+
+        private IEnumerable<int> FindPath (int from, int to)
+        {
+            var visited = new HashSet<int>();
+            var queue = new Queue<Tuple<IEnumerable<int>, int>>();
+            queue.Enqueue(new Tuple<IEnumerable<int>, int>(Enumerable.Empty<int>(), from));
+            while (true) {
+                var actsState = queue.Dequeue();
+                if (actsState.Item2 == to)
+                    return actsState.Item1;
+                if (visited.Add(actsState.Item2))
+                    foreach (int ic in GetFreeNeighborsIndices(actsState.Item2))
+                        queue.Enqueue(new Tuple<IEnumerable<int>, int>(actsState.Item1.Concat(ic), ic));
+            }
+        }
+
         public static double GetCellX (int x, int y)
         {
             return 30 + x * CellXOffset;
@@ -185,7 +212,7 @@ namespace HakunaMatata.HexLines
 
     public class Ball : ModelBase<Ball>
     {
-        private const int BallCellDelta = -20;
+        public const int BallCellDelta = -20;
 
         private double _x, _y, _targetX, _targetY;
         private bool _isMoving;
