@@ -34,7 +34,8 @@
         </DataTemplate>
     </Control.Resources>
     <Grid>
-        <ItemsControl ItemsSource="{Binding Cells}" Width="{Binding Width}" Height="{Binding Height}" Margin="8">
+        <ItemsControl ItemsSource="{Binding Cells}" Width="{Binding Width}" Height="{Binding Height}" Margin="8"
+                      MouseDown="LstTable_OnMouseDown">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas IsItemsHost="True"/>

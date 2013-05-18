@@ -27,6 +27,12 @@ namespace HakunaMatata.HexLines
             _table.SelectedCell = cell;
             Title = _table.Cells.IndexOf(cell).ToString();
         }
+
+        private void LstTable_OnMouseDown (object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Right)
+                _table.SelectedCell = null;
+        }
     }
 
     public class Table
@@ -76,11 +82,19 @@ namespace HakunaMatata.HexLines
             if (cell == null)
                 return;
             cell.IsSelected = value;
-            int n = Cells.IndexOf(cell), h = TableHeight, d = ((n / h) & 1) - 1;
-            new[] { n - h + d, n - h + d + 1, n - 1, n + 1, n + h + d, n + h + d + 1 }
-                .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1)
-                .Select(i => Cells[i])
-                .ForEach(c => c.IsAvailable = value && !c.HasBall);
+            GetNeighbors(cell).ForEach(c => c.IsAvailable = value && !c.HasBall);
+        }
+
+        private IEnumerable<Cell> GetNeighbors (Cell cell)
+        {
+            return GetNeighborsIndices(Cells.IndexOf(cell)).Select(i => Cells[i]);
+        }
+
+        private IEnumerable<int> GetNeighborsIndices (int n)
+        {
+            int h = TableHeight, d = ((n / h) & 1) - 1;
+            return new[] { n - h + d, n - h + d + 1, n - 1, n + 1, n + h + d, n + h + d + 1 }
+                .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1);
         }
     }
 
