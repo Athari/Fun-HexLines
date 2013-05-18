@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -34,7 +33,6 @@ namespace HakunaMatata.HexLines
                     var rnd = new Random();
                     _table.Resize(rnd.Next(8, 30), rnd.Next(8, 20));
                     _table.FillBalls(rnd.Next(10, _table.Cells.Count));
-                    SizeToContent = SizeToContent.WidthAndHeight;
                     break;
             }
             base.OnKeyDown(e);
