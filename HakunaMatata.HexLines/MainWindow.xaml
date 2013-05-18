@@ -62,7 +62,7 @@
 
     <Grid>
         <ItemsControl ItemsSource="{Binding Cells}" MouseDown="LstTable_OnMouseDown"/>
-        <ItemsControl ItemsSource="{Binding Balls}" IsHitTestVisible="False"/>
+        <ItemsControl x:Name="lstBalls" ItemsSource="{Binding Balls}" IsHitTestVisible="False"/>
     </Grid>
 
 </Window>

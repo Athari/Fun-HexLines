@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Alba.Framework.Collections;
 using Alba.Framework.Mvvm.Models;
+using Alba.Framework.Wpf;
 
 namespace HakunaMatata.HexLines
 {
     public partial class MainWindow
     {
         private readonly Table _table = new Table();
+        private Storyboard _animMovingBall;
 
         public MainWindow ()
         {
@@ -24,16 +27,35 @@ namespace HakunaMatata.HexLines
 
         private void FigCell_OnMouseDown (object sender, MouseButtonEventArgs e)
         {
-            var cell = (Cell)((FrameworkElement)e.Source).DataContext;
+            var cell = e.GetSourceDataContext<Cell>();
+            if (_animMovingBall != null)
+                return;
             if (cell.IsAvailable) {
                 Ball selectedBall = _table.SelectedCell.Ball;
                 _table.SelectedCell = null;
-                selectedBall.MoveTo(cell);
+                AnimateMoveBall(selectedBall, cell);
             }
             else if (cell.Ball != null) {
                 _table.SelectedCell = cell;
             }
-            Title = _table.Cells.IndexOf(cell).ToString();
+        }
+
+        private void AnimateMoveBall (Ball ball, Cell cell)
+        {
+            _table.MovingBall = ball;
+            ball.StartMoveTo(cell);
+
+            _animMovingBall = new Storyboard()
+                .AnimateDouble(TimeSpan.FromSeconds(1), to: ball.TargetX, a: a => a.SetTarget(Canvas.LeftProperty.ToPath()))
+                .AnimateDouble(TimeSpan.FromSeconds(1), to: ball.TargetY, a: a => a.SetTarget(Canvas.TopProperty.ToPath()))
+                .AddCompleted(AnimMove_OnCompleted);
+            _animMovingBall.Begin(lstBalls.GetItemContainer(cell.Ball));
+        }
+
+        private void AnimMove_OnCompleted (object sender, EventArgs e)
+        {
+            _table.MovingBall.EndMoveTo();
+            _animMovingBall = null;
         }
 
         private void LstTable_OnMouseDown (object sender, MouseButtonEventArgs e)
@@ -52,9 +74,9 @@ namespace HakunaMatata.HexLines
 
         public int TableWidth { get; private set; }
         public int TableHeight { get; private set; }
-
         public ObservableCollectionEx<Cell> Cells { get; private set; }
         public ObservableCollectionEx<Ball> Balls { get; private set; }
+        public Ball MovingBall { get; set; }
 
         public Table ()
         {
@@ -106,11 +128,6 @@ namespace HakunaMatata.HexLines
         private IEnumerable<Cell> GetAllFreeNeighbors (Cell cell)
         {
             return Cells.IndexOf(cell).TraverseGraph(GetFreeNeighborsIndices).Select(i => Cells[i]).Where(c => c != cell);
-        }
-
-        private IEnumerable<Cell> GetFreeNeighbors (Cell cell)
-        {
-            return GetFreeNeighborsIndices(Cells.IndexOf(cell)).Select(i => Cells[i]);
         }
 
         private IEnumerable<int> GetFreeNeighborsIndices (int n)
@@ -170,8 +187,8 @@ namespace HakunaMatata.HexLines
     {
         private const int BallCellDelta = -20;
 
-        private double _x;
-        private double _y;
+        private double _x, _y, _targetX, _targetY;
+        private bool _isMoving;
 
         public Color Color { get; private set; }
         public Cell Cell { get; private set; }
@@ -179,7 +196,10 @@ namespace HakunaMatata.HexLines
         private Ball (Cell cell, Color color)
         {
             Color = color;
-            MoveTo(cell);
+            Cell = cell;
+            Cell.Ball = this;
+            X = cell.X + BallCellDelta;
+            Y = cell.Y + BallCellDelta;
         }
 
         public double X
@@ -194,19 +214,45 @@ namespace HakunaMatata.HexLines
             private set { Set(ref _y, value); }
         }
 
-        public void MoveTo (Cell cell)
+        public double TargetX
         {
-            if (Cell != null)
-                Cell.Ball = null;
-            Cell = cell;
-            Cell.Ball = this;
-            X = cell.X + BallCellDelta;
-            Y = cell.Y + BallCellDelta;
+            get { return Get(ref _targetX); }
+            private set { Set(ref _targetX, value); }
+        }
+
+        public double TargetY
+        {
+            get { return Get(ref _targetY); }
+            private set { Set(ref _targetY, value); }
+        }
+
+        public bool IsMoving
+        {
+            get { return Get(ref _isMoving); }
+            private set { Set(ref _isMoving, value); }
         }
 
         public Brush BallColorBrush
         {
             get { return new SolidColorBrush(Color); }
+        }
+
+        public void StartMoveTo (Cell cell)
+        {
+            if (Cell != null)
+                Cell.Ball = null;
+            Cell = cell;
+            Cell.Ball = this;
+            TargetX = cell.X + BallCellDelta;
+            TargetY = cell.Y + BallCellDelta;
+            IsMoving = true;
+        }
+
+        public void EndMoveTo ()
+        {
+            X = TargetX;
+            Y = TargetY;
+            IsMoving = false;
         }
 
         public static IEnumerable<Ball> GenerateBalls (IList<Cell> cells, int w, int h, int count)
