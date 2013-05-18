@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,7 +8,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Alba.Framework.Collections;
 using Alba.Framework.Mvvm.Models;
-using Alba.Framework.Text;
 using Alba.Framework.Wpf;
 using FindPathState = System.Tuple<System.Collections.Generic.IEnumerable<int>, int>;
 
@@ -60,33 +57,20 @@ namespace HakunaMatata.HexLines
 
         private void AnimateMoveBall (Ball ball, Cell fromCell, Cell toCell)
         {
-            List<Cell> path = _table.FindPath(fromCell, toCell).ToList();
+            List<Point> path = _table.FindPath(fromCell, toCell).Select(c => c.BallPoint).ToList();
             _table.MovingBall = ball;
             ball.StartMoveTo(toCell);
 
-            TimeSpan begin = TimeSpan.Zero, d = TimeSpan.FromSeconds(.1);
-            _animMovingBall = new Storyboard();
-            /*foreach (Cell pathItem in path) {
-                _animMovingBall
-                    .AnimateDouble(d, to: pathItem.X + Ball.BallCellDelta, a: a => a.SetTarget(Canvas.LeftProperty.ToPath()).SetBeginTime(begin))
-                    .AnimateDouble(d, to: pathItem.Y + Ball.BallCellDelta, a: a => a.SetTarget(Canvas.TopProperty.ToPath()).SetBeginTime(begin));
-                begin += d;
-            }*/
-
-            var spath = new StringBuilder("M {0},{1} ".FmtInvariant(fromCell.X + Ball.BallCellDelta, fromCell.Y + Ball.BallCellDelta));
-            Point[] points = path.Select(c => new Point(c.X, c.Y)).ToArray();
-            foreach (Point p in points)
-                spath.AppendFormat(CultureInfo.InvariantCulture, "L {0},{1} ",
-                    p.X + Ball.BallCellDelta, p.Y + Ball.BallCellDelta);
-            var figure = PathFigureCollection.Parse(spath.ToString());
-            var duration = new Duration(new TimeSpan(d.Ticks * points.Length));
-            var a1 = new DoubleAnimationUsingPath { PathGeometry = new PathGeometry { Figures = figure }, Duration = duration, AccelerationRatio = .1, DecelerationRatio = .7 }.SetTarget(Canvas.LeftProperty.ToPath());
-            a1.Source = PathAnimationSource.X;
-            var a2 = new DoubleAnimationUsingPath { PathGeometry = new PathGeometry { Figures = figure }, Duration = duration, AccelerationRatio = .1, DecelerationRatio = .7 }.SetTarget(Canvas.TopProperty.ToPath());
-            a2.Source = PathAnimationSource.Y;
-            _animMovingBall.Children.Add(a1);
-            _animMovingBall.Children.Add(a2);
-
+            var animX = new DoubleAnimationUsingPath {
+                PathGeometry = new PathGeometry {
+                    Figures = new PathFigureCollection {
+                        new PathFigure(fromCell.BallPoint, path.Select(p => new LineSegment(p, false)), false)
+                    }
+                },
+                Duration = new Duration(TimeSpan.FromSeconds(.05 * path.Count)),
+                AccelerationRatio = .1, DecelerationRatio = .7, Source = PathAnimationSource.X,
+            }.SetTarget(Canvas.LeftProperty.ToPath());
+            _animMovingBall = new Storyboard { Children = { animX, animX.CloneForY().SetTarget(Canvas.TopProperty.ToPath()) } };
             _animMovingBall.AddCompleted(AnimMove_OnCompleted);
             _animMovingBall.Begin(lstBalls.GetItemContainer(toCell.Ball));
         }
@@ -245,6 +229,11 @@ namespace HakunaMatata.HexLines
         {
             get { return Get(ref _isAvailable); }
             set { Set(ref _isAvailable, value); }
+        }
+
+        public Point BallPoint
+        {
+            get { return new Point(X + Ball.BallCellDelta, Y + Ball.BallCellDelta); }
         }
 
         public static IEnumerable<Cell> GenerateTableCells (int w, int h)
