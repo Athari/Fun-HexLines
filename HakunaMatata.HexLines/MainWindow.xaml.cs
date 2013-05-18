@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -8,6 +9,7 @@ using System.Windows.Media.Animation;
 using Alba.Framework.Collections;
 using Alba.Framework.Mvvm.Models;
 using Alba.Framework.Wpf;
+using FindPathState = System.Tuple<System.Collections.Generic.IEnumerable<int>, int>;
 
 namespace HakunaMatata.HexLines
 {
@@ -19,10 +21,23 @@ namespace HakunaMatata.HexLines
         public MainWindow ()
         {
             _table.Resize(16, 10);
-            _table.FillBalls(100);
+            _table.FillBalls(80);
 
             DataContext = _table;
             InitializeComponent();
+        }
+
+        protected override void OnKeyDown (KeyEventArgs e)
+        {
+            switch (e.Key) {
+                case Key.F2:
+                    var rnd = new Random();
+                    _table.Resize(rnd.Next(8, 30), rnd.Next(8, 20));
+                    _table.FillBalls(rnd.Next(10, _table.Cells.Count));
+                    SizeToContent = SizeToContent.WidthAndHeight;
+                    break;
+            }
+            base.OnKeyDown(e);
         }
 
         private void FigCell_OnMouseDown (object sender, MouseButtonEventArgs e)
@@ -72,15 +87,15 @@ namespace HakunaMatata.HexLines
         }
     }
 
-    public class Table
+    public class Table : ModelBase<Table>
     {
         public const double CellXOffset = 45;
         public const double CellYOffset = 52;
 
         private Cell _selectedCell;
+        private int _tableWidth;
+        private int _tableHeight;
 
-        public int TableWidth { get; private set; }
-        public int TableHeight { get; private set; }
         public ObservableCollectionEx<Cell> Cells { get; private set; }
         public ObservableCollectionEx<Ball> Balls { get; private set; }
         public Ball MovingBall { get; set; }
@@ -89,6 +104,18 @@ namespace HakunaMatata.HexLines
         {
             Cells = new ObservableCollectionEx<Cell>();
             Balls = new ObservableCollectionEx<Ball>();
+        }
+
+        public int TableWidth
+        {
+            get { return _tableWidth; }
+            private set { Set(ref _tableWidth, value, "TableWidth", "Width"); }
+        }
+
+        public int TableHeight
+        {
+            get { return _tableHeight; }
+            private set { Set(ref _tableHeight, value, "TableHeight", "Height"); }
         }
 
         public Cell SelectedCell
@@ -117,6 +144,7 @@ namespace HakunaMatata.HexLines
             TableHeight = h;
             SelectedCell = null;
             Cells.Replace(Cell.GenerateTableCells(TableWidth, TableHeight));
+            Balls.Clear();
         }
 
         public void FillBalls (int count)
@@ -152,15 +180,15 @@ namespace HakunaMatata.HexLines
         private IEnumerable<int> FindPath (int from, int to)
         {
             var visited = new HashSet<int>();
-            var queue = new Queue<Tuple<IEnumerable<int>, int>>();
-            queue.Enqueue(new Tuple<IEnumerable<int>, int>(Enumerable.Empty<int>(), from));
+            var queue = new Queue<FindPathState>();
+            queue.Enqueue(new FindPathState(new int[0], from));
             while (true) {
-                var actsState = queue.Dequeue();
-                if (actsState.Item2 == to)
-                    return actsState.Item1;
-                if (visited.Add(actsState.Item2))
-                    foreach (int ic in GetFreeNeighborsIndices(actsState.Item2))
-                        queue.Enqueue(new Tuple<IEnumerable<int>, int>(actsState.Item1.Concat(ic), ic));
+                var state = queue.Dequeue();
+                if (state.Item2 == to)
+                    return state.Item1;
+                if (visited.Add(state.Item2))
+                    foreach (int ic in GetFreeNeighborsIndices(state.Item2))
+                        queue.Enqueue(new FindPathState(state.Item1.Concat(ic), ic));
             }
         }
 
