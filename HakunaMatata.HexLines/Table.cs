@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media;
 using Alba.Framework.Collections;
 using Alba.Framework.Mvvm.Models;
+using Alba.Framework.Wpf;
 using FindPathState = System.Tuple<System.Collections.Generic.IEnumerable<int>, int>;
 
 namespace HakunaMatata.HexLines
@@ -18,12 +20,14 @@ namespace HakunaMatata.HexLines
 
         public ObservableCollectionEx<Cell> Cells { get; private set; }
         public ObservableCollectionEx<Ball> Balls { get; private set; }
+        public ObservableCollectionEx<Color> BallColors { get; private set; }
         public Ball MovingBall { get; set; }
 
         public Table ()
         {
             Cells = new ObservableCollectionEx<Cell>();
             Balls = new ObservableCollectionEx<Ball>();
+            BallColors = new ObservableCollectionEx<Color> { Colors.Orange };
         }
 
         public int CellWidth
@@ -67,9 +71,21 @@ namespace HakunaMatata.HexLines
             Balls.Clear();
         }
 
-        public void FillBalls (int count)
+        public void GenerateBallColors (int count)
         {
-            Balls.Replace(Ball.GenerateBalls(Cells, CellWidth, CellHeight, count));
+            /*BallColors.Replace(Enumerable.Range(0, count).Select(i =>
+                HslColor.From255(255 * i / count, rnd.Next(0, 255), rnd.Next(30, 150)).ToColor()));*/
+            BallColors.Replace(
+                Enumerable.Range(0, count).Select(i => (double)i / count).Zip(
+                    Enumerable.Range(0, count).Select(i => 0.2 + i * 0.8 / (count - 1)).Shuffle(),
+                    Enumerable.Range(0, count).Select(i => 0.1 + Math.Sqrt(i / (count - 1d)) * 0.5).Shuffle(),
+                    (hue, saturation, lightness) => new { hue, saturation, lightness })
+                    .Select(hsl => new HslColor(hsl.hue, hsl.saturation, hsl.lightness).ToColor()));
+        }
+
+        public void GenerateBalls (int count)
+        {
+            Balls.Replace(Ball.GenerateBalls(this, count));
         }
 
         private void UpdateSelection (Cell cell, bool value)

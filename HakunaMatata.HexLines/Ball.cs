@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using Alba.Framework.Collections;
 using Alba.Framework.Mvvm.Models;
 using Alba.Framework.Wpf;
 
@@ -14,15 +14,17 @@ namespace HakunaMatata.HexLines
 
         private double _x, _y, _targetX, _targetY;
         private bool _isMoving;
+        private Table _table;
         private Cell _cell;
 
         public Color Color { get; private set; }
 
-        private Ball (Cell cell, Color color)
+        private Ball (Table table, Cell cell, Color color)
         {
-            Color = color;
+            _table = table;
             Cell = cell;
             Cell.Ball = this;
+            Color = color;
             X = cell.X + BallCellDelta;
             Y = cell.Y + BallCellDelta;
         }
@@ -99,16 +101,10 @@ namespace HakunaMatata.HexLines
             IsMoving = false;
         }
 
-        public static IEnumerable<Ball> GenerateBalls (IList<Cell> cells, int w, int h, int count)
+        public static IEnumerable<Ball> GenerateBalls (Table table, int count)
         {
-            var rnd = new Random();
-            return Enumerable.Range(0, w * h).OrderBy(i => rnd.Next()).Take(count)
-                .Select(ic => new Ball(cells[ic], new Color {
-                    ScR = (float)rnd.NextDouble(),
-                    ScG = (float)rnd.NextDouble(),
-                    ScB = (float)rnd.NextDouble(),
-                    ScA = 255,
-                }));
+            return Enumerable.Range(0, table.CellWidth * table.CellHeight).Shuffle().Take(count).Select(ic =>
+                new Ball(table, table.Cells[ic], table.BallColors.RandomItem()));
         }
     }
 }

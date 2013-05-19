@@ -7,7 +7,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Alba.Framework.Wpf;
-using FindPathState = System.Tuple<System.Collections.Generic.IEnumerable<int>, int>;
 
 namespace HakunaMatata.HexLines
 {
@@ -21,7 +20,8 @@ namespace HakunaMatata.HexLines
         public MainWindow ()
         {
             _table.Resize(20, 10);
-            _table.FillBalls(60);
+            _table.GenerateBallColors(8);
+            _table.GenerateBalls(60);
 
             DataContext = _table;
             InitializeComponent();
@@ -33,7 +33,8 @@ namespace HakunaMatata.HexLines
                 case Key.F2:
                     var rnd = new Random();
                     _table.Resize(rnd.Next(8, 30), rnd.Next(8, 20));
-                    _table.FillBalls(rnd.Next(10, _table.Cells.Count));
+                    _table.GenerateBallColors(8);
+                    _table.GenerateBalls(rnd.Next(10, _table.Cells.Count));
                     break;
             }
             base.OnKeyDown(e);
