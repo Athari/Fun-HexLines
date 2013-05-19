@@ -15,13 +15,15 @@ namespace HakunaMatata.HexLines
 {
     public partial class MainWindow
     {
+        private const double AnimMovingBallStep = 0.05;
+
         private readonly Table _table = new Table();
         private Storyboard _animMovingBall;
 
         public MainWindow ()
         {
-            _table.Resize(16, 10);
-            _table.FillBalls(80);
+            _table.Resize(20, 10);
+            _table.FillBalls(60);
 
             DataContext = _table;
             InitializeComponent();
@@ -61,24 +63,31 @@ namespace HakunaMatata.HexLines
             _table.MovingBall = ball;
             ball.StartMoveTo(toCell);
 
-            var animX = new DoubleAnimationUsingPath {
-                PathGeometry = new PathGeometry {
-                    Figures = new PathFigureCollection {
-                        new PathFigure(fromCell.BallPoint, path.Select(p => new LineSegment(p, false)), false)
-                    }
-                },
-                Duration = new Duration(TimeSpan.FromSeconds(.05 * path.Count)),
-                AccelerationRatio = .1, DecelerationRatio = .7, Source = PathAnimationSource.X,
-            }.SetTarget(Canvas.LeftProperty.ToPath());
-            _animMovingBall = new Storyboard { Children = { animX, animX.CloneForY().SetTarget(Canvas.TopProperty.ToPath()) } };
+            TimeSpan duration = TimeSpan.FromSeconds(AnimMovingBallStep * path.Count);
+            DoubleAnimationUsingPath animX;
+            _animMovingBall = new Storyboard {
+                Children = {
+                    (animX = new DoubleAnimationUsingPath {
+                        PathGeometry = new PathGeometry {
+                            Figures = new PathFigureCollection {
+                                new PathFigure(fromCell.BallPoint, path.Select(p => new LineSegment(p, false)), false)
+                            }
+                        },
+                        Duration = new Duration(duration),
+                        AccelerationRatio = .1, DecelerationRatio = .7, Source = PathAnimationSource.X,
+                    }.SetTarget(Canvas.LeftProperty.ToPath())),
+                    animX.CloneForY().SetTarget(Canvas.TopProperty.ToPath()),
+                }
+            };
             _animMovingBall.AddCompleted(AnimMove_OnCompleted);
             _animMovingBall.Begin(lstBalls.GetItemContainer(toCell.Ball));
         }
 
         private void AnimMove_OnCompleted (object sender, EventArgs e)
         {
-            _table.MovingBall.EndMoveTo();
+            _animMovingBall.Remove(lstBalls.GetItemContainer(_table.MovingBall));
             _animMovingBall = null;
+            _table.MovingBall.EndMoveTo();
         }
 
         private void LstTable_OnMouseDown (object sender, MouseButtonEventArgs e)
@@ -94,8 +103,8 @@ namespace HakunaMatata.HexLines
         public const double CellYOffset = 52;
 
         private Cell _selectedCell;
-        private int _tableWidth;
-        private int _tableHeight;
+        private int _cellWidth;
+        private int _cellHeight;
 
         public ObservableCollectionEx<Cell> Cells { get; private set; }
         public ObservableCollectionEx<Ball> Balls { get; private set; }
@@ -107,16 +116,16 @@ namespace HakunaMatata.HexLines
             Balls = new ObservableCollectionEx<Ball>();
         }
 
-        public int TableWidth
+        public int CellWidth
         {
-            get { return _tableWidth; }
-            private set { Set(ref _tableWidth, value, "TableWidth", "Width"); }
+            get { return _cellWidth; }
+            private set { Set(ref _cellWidth, value, "CellWidth", "Width"); }
         }
 
-        public int TableHeight
+        public int CellHeight
         {
-            get { return _tableHeight; }
-            private set { Set(ref _tableHeight, value, "TableHeight", "Height"); }
+            get { return _cellHeight; }
+            private set { Set(ref _cellHeight, value, "CellHeight", "Height"); }
         }
 
         public Cell SelectedCell
@@ -131,26 +140,26 @@ namespace HakunaMatata.HexLines
 
         public double Width
         {
-            get { return (TableWidth + .5) * CellXOffset; }
+            get { return (CellWidth + .5) * CellXOffset; }
         }
 
         public double Height
         {
-            get { return (TableHeight + .6) * CellYOffset; }
+            get { return (CellHeight + .6) * CellYOffset; }
         }
 
         public void Resize (int w, int h)
         {
-            TableWidth = w;
-            TableHeight = h;
+            CellWidth = w;
+            CellHeight = h;
             SelectedCell = null;
-            Cells.Replace(Cell.GenerateTableCells(TableWidth, TableHeight));
+            Cells.Replace(Cell.GenerateTableCells(CellWidth, CellHeight));
             Balls.Clear();
         }
 
         public void FillBalls (int count)
         {
-            Balls.Replace(Ball.GenerateBalls(Cells, TableWidth, TableHeight, count));
+            Balls.Replace(Ball.GenerateBalls(Cells, CellWidth, CellHeight, count));
         }
 
         private void UpdateSelection (Cell cell, bool value)
@@ -168,7 +177,7 @@ namespace HakunaMatata.HexLines
 
         private IEnumerable<int> GetFreeNeighborsIndices (int n)
         {
-            int h = TableHeight, d = ((n / h) & 1) - 1;
+            int h = CellHeight, d = ((n / h) & 1) - 1;
             return new[] { n - h + d, n - h + d + 1, n - 1, n + 1, n + h + d, n + h + d + 1 }
                 .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1 && Cells[i].Ball == null);
         }
@@ -250,9 +259,9 @@ namespace HakunaMatata.HexLines
 
         private double _x, _y, _targetX, _targetY;
         private bool _isMoving;
+        private Cell _cell;
 
         public Color Color { get; private set; }
-        public Cell Cell { get; private set; }
 
         private Ball (Cell cell, Color color)
         {
@@ -261,6 +270,12 @@ namespace HakunaMatata.HexLines
             Cell.Ball = this;
             X = cell.X + BallCellDelta;
             Y = cell.Y + BallCellDelta;
+        }
+
+        public Cell Cell
+        {
+            get { return Get(ref _cell); }
+            private set { Set(ref _cell, value); }
         }
 
         public double X
@@ -295,7 +310,20 @@ namespace HakunaMatata.HexLines
 
         public Brush BallColorBrush
         {
-            get { return new SolidColorBrush(Color); }
+            get
+            {
+                //return new SolidColorBrush(Color);
+                return new RadialGradientBrush(new GradientStopCollection {
+                    new GradientStop(Colors.WhiteSmoke, 0),
+                    new GradientStop(Color, 0.2),
+                    new GradientStop(Color.Darker(0.5f), 0.7),
+                    new GradientStop(Color.Darker(0.9f), 1),
+                }) {
+                    GradientOrigin = new Point(.3, .35),
+                    MappingMode = BrushMappingMode.RelativeToBoundingBox,
+                    SpreadMethod = GradientSpreadMethod.Pad,
+                };
+            }
         }
 
         public void StartMoveTo (Cell cell)
