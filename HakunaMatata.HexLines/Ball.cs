@@ -14,14 +14,12 @@ namespace HakunaMatata.HexLines
 
         private double _x, _y, _targetX, _targetY;
         private bool _isMoving;
-        private Table _table;
         private Cell _cell;
 
         public Color Color { get; private set; }
 
-        private Ball (Table table, Cell cell, Color color)
+        private Ball (Cell cell, Color color)
         {
-            _table = table;
             Cell = cell;
             Cell.Ball = this;
             Color = color;
@@ -88,6 +86,8 @@ namespace HakunaMatata.HexLines
             if (Cell != null)
                 Cell.Ball = null;
             Cell = cell;
+            if (cell == null)
+                return;
             Cell.Ball = this;
             TargetX = cell.X + BallCellDelta;
             TargetY = cell.Y + BallCellDelta;
@@ -104,7 +104,7 @@ namespace HakunaMatata.HexLines
         public static IEnumerable<Ball> GenerateBalls (Table table, int count)
         {
             return Enumerable.Range(0, table.CellWidth * table.CellHeight).Shuffle().Take(count).Select(ic =>
-                new Ball(table, table.Cells[ic], table.BallColors.RandomItem()));
+                new Ball(table.Cells[ic], table.BallColors.RandomItem()));
         }
     }
 }

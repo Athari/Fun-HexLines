@@ -60,7 +60,7 @@ namespace HakunaMatata.HexLines
         {
             List<Point> path = _table.FindPath(fromCell, toCell).Select(c => c.BallPoint).ToList();
             _table.MovingBall = ball;
-            ball.StartMoveTo(toCell);
+            _table.StartMoveBallTo(ball, toCell);
 
             TimeSpan duration = TimeSpan.FromSeconds(AnimMovingBallStep * path.Count);
             DoubleAnimationUsingPath animX;
@@ -86,7 +86,7 @@ namespace HakunaMatata.HexLines
         {
             _animMovingBall.Remove(lstBalls.GetItemContainer(_table.MovingBall));
             _animMovingBall = null;
-            _table.MovingBall.EndMoveTo();
+            _table.EndMoveBallTo();
         }
 
         private void LstTable_OnMouseDown (object sender, MouseButtonEventArgs e)
