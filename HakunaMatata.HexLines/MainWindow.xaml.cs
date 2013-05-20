@@ -19,6 +19,7 @@ namespace HakunaMatata.HexLines
 
         public MainWindow ()
         {
+            _table.Mode = GameMode.Groups;
             _table.Resize(20, 10);
             _table.GenerateBallColors(8);
             _table.GenerateBalls(60);
@@ -32,7 +33,7 @@ namespace HakunaMatata.HexLines
             switch (e.Key) {
                 case Key.F2:
                     var rnd = new Random();
-                    _table.Resize(rnd.Next(8, 30), rnd.Next(8, 20));
+                    _table.Resize(rnd.Next(8, 30), rnd.Next(8, 16));
                     _table.GenerateBallColors(8);
                     _table.GenerateBalls(rnd.Next(10, _table.Cells.Count));
                     break;
@@ -78,8 +79,7 @@ namespace HakunaMatata.HexLines
                     animX.CloneForY().SetTarget(Canvas.TopProperty.ToPath()),
                 }
             };
-            _animMovingBall.AddCompleted(AnimMove_OnCompleted);
-            _animMovingBall.Begin(lstBalls.GetItemContainer(toCell.Ball));
+            _animMovingBall.AddCompleted(AnimMove_OnCompleted).Begin(lstBalls.GetItemContainer(toCell.Ball));
         }
 
         private void AnimMove_OnCompleted (object sender, EventArgs e)

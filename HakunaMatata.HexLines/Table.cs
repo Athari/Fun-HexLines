@@ -5,11 +5,12 @@ using System.Windows.Media;
 using Alba.Framework.Collections;
 using Alba.Framework.Mvvm.Models;
 using Alba.Framework.Wpf;
-using FindPathState = System.Tuple<System.Collections.Generic.IEnumerable<int>, int>;
-using IndexWithDirection = System.Tuple<int, int>;
 
 namespace HakunaMatata.HexLines
 {
+    using FindPathState = Tuple<IEnumerable<int>, int>;
+    using IndexWithDir = Tuple<int, int>;
+
     public class Table : ModelBase<Table>
     {
         public const double CellXOffset = 45;
@@ -19,6 +20,7 @@ namespace HakunaMatata.HexLines
         private int _cellWidth;
         private int _cellHeight;
 
+        public GameMode Mode { get; set; }
         public ObservableCollectionEx<Cell> Cells { get; private set; }
         public ObservableCollectionEx<Ball> Balls { get; private set; }
         public ObservableCollectionEx<Color> BallColors { get; private set; }
@@ -74,12 +76,10 @@ namespace HakunaMatata.HexLines
 
         public void GenerateBallColors (int count)
         {
-            /*BallColors.Replace(Enumerable.Range(0, count).Select(i =>
-                HslColor.From255(255 * i / count, rnd.Next(0, 255), rnd.Next(30, 150)).ToColor()));*/
             BallColors.Replace(
-                Enumerable.Range(0, count).Select(i => (double)i / count).Zip(
-                    Enumerable.Range(0, count).Select(i => 0.2 + i * 0.8 / (count - 1)).Shuffle(),
-                    Enumerable.Range(0, count).Select(i => 0.1 + Math.Sqrt(i / (count - 1d)) * 0.5).Shuffle(),
+                count.Range().Select(i => (double)i / count).Zip(
+                    count.Range().Select(i => 0.3 + i * 0.7 / (count - 1)).Shuffle(),
+                    count.Range().Select(i => 0.1 + Math.Sqrt(i / (count - 1d)) * 0.7).Shuffle(),
                     (hue, saturation, lightness) => new { hue, saturation, lightness })
                     .Select(hsl => new HslColor(hsl.hue, hsl.saturation, hsl.lightness).ToColor()));
         }
@@ -108,20 +108,20 @@ namespace HakunaMatata.HexLines
             return GetNeighborsIndices(n).Where(i => Cells[i].Ball == null);
         }
 
-        private IEnumerable<IndexWithDirection> GetSameNeighborsIndicesWithDirections (int n)
+        private IEnumerable<IndexWithDir> GetSameNeighborsIndicesWithDirs (int n)
         {
             if (Cells[n].Ball == null)
-                return new IndexWithDirection[0];
+                return new IndexWithDir[0];
             var color = Cells[n].Ball.Color;
-            return GetNeighborsIndicesWithDirections(n).Where(iwd => Cells[iwd.Item1].Ball != null && Cells[iwd.Item1].Ball.Color == color);
+            return GetNeighborsIndicesWithDirs(n).Where(iwd => Cells[iwd.Item1].Ball != null && Cells[iwd.Item1].Ball.Color == color);
         }
 
-        private IEnumerable<IndexWithDirection> GetNeighborsIndicesWithDirections (int n)
+        private IEnumerable<IndexWithDir> GetNeighborsIndicesWithDirs (int n)
         {
             int h = CellHeight, d = ((n / h) & 1) - 1;
             return new[] { new[] { n - 1, -3 }, new[] { n - h + d, -2 }, new[] { n - h + d + 1, -1 }, new[] { n + 1, 1 }, new[] { n + h + d + 1, 2 }, new[] { n + h + d, 3 } }
                 .Where(i => i[0] >= 0 && i[0] < Cells.Count && Math.Abs(i[0] % h - n % h) <= 1)
-                .Select(i => new IndexWithDirection(i[0], i[1]));
+                .Select(i => new IndexWithDir(i[0], i[1]));
         }
 
         private IEnumerable<int> GetNeighborsIndices (int n)
@@ -164,23 +164,35 @@ namespace HakunaMatata.HexLines
 
         private void DestroyBallGroups ()
         {
-            Enumerable.Range(0, Cells.Count)
-                .SelectMany(ic => new[] { 1, 2, 3 }, (ic, dir) => GetLineGroup(ic, dir).ToList())
-                .Where(group => group.Count >= GameConstants.MinLineLength)
-                .SelectMany()
-                .ForEach(iwd => DestroyBall(Cells[iwd.Item1].Ball));
+            var getDestroyableGroups = new Dictionary<GameMode, Func<int, IEnumerable<IEnumerable<int>>>> {
+                { GameMode.Lines, GetDestroyableLines },
+                { GameMode.Groups, GetDestroyableGroups },
+            }[Mode];
+            Cells.Count.Range().SelectMany(getDestroyableGroups).SelectMany()
+                .Select(ic => Cells[ic].Ball).Where(ball => ball != null)
+                .ForEach(DestroyBall);
         }
 
-        private IEnumerable<IndexWithDirection> GetLineGroup (int n, int dir)
+        private IEnumerable<IEnumerable<int>> GetDestroyableLines (int ic)
         {
-            return new IndexWithDirection(n, dir).TraverseList(iwdi =>
-                GetSameNeighborsIndicesWithDirections(iwdi.Item1).SingleOrDefault(iwd => iwd.Item2 == dir));
+            return 1.Range(3)
+                .Select(dir => new IndexWithDir(ic, dir)
+                    .TraverseList(iwdi => GetSameNeighborsIndicesWithDirs(iwdi.Item1).SingleOrDefault(iwd => iwd.Item2 == dir))
+                    .ToList())
+                .Where(group => group.Count >= GameConstants.MinLineLength)
+                .Select(group => group.Select(iwd => iwd.Item1));
+        }
+
+        private IEnumerable<IEnumerable<int>> GetDestroyableGroups (int ic)
+        {
+            List<int> group = ic.TraverseGraph(i => GetSameNeighborsIndicesWithDirs(i).Select(iwd => iwd.Item1)).ToList();
+            if (group.Count >= GameConstants.MinGroupLength)
+                yield return group;
         }
 
         private void DestroyBall (Ball ball)
         {
-            ball.StartMoveTo(null);
-            Balls.Remove(ball);
+            ball.Destroy();
         }
 
         public static double GetCellX (int x, int y)

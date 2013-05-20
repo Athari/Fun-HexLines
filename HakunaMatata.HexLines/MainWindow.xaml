@@ -88,6 +88,18 @@
                         </BeginStoryboard>
                     </DataTrigger.ExitActions>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding IsDestroyed}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation ctl:AnimProps.Target="figBall.Opacity" To="0" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformRotate.Angle" By="3600" AccelerationRatio="1" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" To="1.7" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" To="0.5" Duration="0:0:0.3"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
 

@@ -60,6 +60,7 @@
     </ApplicationDefinition>
     <Compile Include="Cell.cs" />
     <Compile Include="GameConstants.cs" />
+    <Compile Include="GameMode.cs" />
     <Compile Include="Table.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -13,7 +13,7 @@ namespace HakunaMatata.HexLines
         public const int BallCellDelta = -20;
 
         private double _x, _y, _targetX, _targetY;
-        private bool _isMoving;
+        private bool _isMoving, _isDestroyed;
         private Cell _cell;
 
         public Color Color { get; private set; }
@@ -63,6 +63,12 @@ namespace HakunaMatata.HexLines
             private set { Set(ref _isMoving, value); }
         }
 
+        public bool IsDestroyed
+        {
+            get { return Get(ref _isDestroyed); }
+            private set { Set(ref _isDestroyed, value); }
+        }
+
         public Brush BallColorBrush
         {
             get
@@ -101,9 +107,16 @@ namespace HakunaMatata.HexLines
             IsMoving = false;
         }
 
+        public void Destroy ()
+        {
+            Cell.Ball = null;
+            Cell = null;
+            IsDestroyed = true;
+        }
+
         public static IEnumerable<Ball> GenerateBalls (Table table, int count)
         {
-            return Enumerable.Range(0, table.CellWidth * table.CellHeight).Shuffle().Take(count).Select(ic =>
+            return table.Cells.Count.Range().Shuffle().Take(count).Select(ic =>
                 new Ball(table.Cells[ic], table.BallColors.RandomItem()));
         }
     }
