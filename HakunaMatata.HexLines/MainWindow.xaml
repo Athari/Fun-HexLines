@@ -4,16 +4,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         xmlns:ctl="clr-namespace:Alba.Framework.Controls;assembly=Alba.Framework"
+        xmlns:conv="clr-namespace:Alba.Framework.Markup.Converters;assembly=Alba.Framework"
         xmlns:hex="clr-namespace:HakunaMatata.HexLines"
         d:DataContext="{d:DesignInstance hex:Table}"
         Title="Hex Lines" SizeToContent="WidthAndHeight"
         Background="Indigo">
     <Control.Resources>
+        
+        <conv:BoolToVisibilityConverter x:Key="convBoolToVis"/>
 
         <Style TargetType="ItemsControl">
             <Setter Property="Width" Value="{Binding Width}"/>
             <Setter Property="Height" Value="{Binding Height}"/>
-            <Setter Property="Margin" Value="8"/>
             <Setter Property="ItemsPanel">
                 <Setter.Value>
                     <ItemsPanelTemplate>
@@ -68,6 +70,25 @@
                 </Ellipse.Effect>
             </Ellipse>
             <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsNew}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation ctl:AnimProps.Target="figBall.Opacity" From="0" To="1" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" From="0.2" To="0.6" Duration="0:0:0"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" From="0.2" To="0.6" Duration="0:0:0"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" To="1" Duration="0:0:0.2" DecelerationRatio="1"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" To="1" Duration="0:0:0.2" DecelerationRatio="1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
                 <DataTrigger Binding="{Binding IsMoving}" Value="True">
                     <DataTrigger.EnterActions>
                         <BeginStoryboard>
@@ -93,7 +114,7 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation ctl:AnimProps.Target="figBall.Opacity" To="0" Duration="0:0:0.3"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformRotate.Angle" By="3600" AccelerationRatio="1" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformRotate.Angle" By="3600" Duration="0:0:0.3" AccelerationRatio="1"/>
                                 <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" To="1.7" Duration="0:0:0.3"/>
                                 <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" To="0.5" Duration="0:0:0.3"/>
                             </Storyboard>
@@ -104,10 +125,67 @@
         </DataTemplate>
 
     </Control.Resources>
-
     <Grid>
-        <ItemsControl ItemsSource="{Binding Cells}" MouseDown="LstTable_OnMouseDown"/>
-        <ItemsControl x:Name="lstBalls" ItemsSource="{Binding Balls}" IsHitTestVisible="False"/>
-    </Grid>
 
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Column="0" Grid.Row="0" Height="40">
+            <TextBlock Text="888888" Foreground="Green" FontSize="30" Margin="30 0" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Score, StringFormat=000000}" Foreground="Yellow" FontSize="30" Margin="30 0" VerticalAlignment="Center"/>
+        </Grid>
+
+        <Grid Grid.Column="0" Grid.Row="1" Margin="10 0 10 10">
+            <ItemsControl ItemsSource="{Binding Cells}" MouseDown="LstTable_OnMouseDown"/>
+            <ItemsControl x:Name="lstBalls" ItemsSource="{Binding Balls}" IsHitTestVisible="False"/>
+        </Grid>
+
+        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Visibility="{Binding IsGameOver, Converter={StaticResource convBoolToVis}, PresentationTraceSources.TraceLevel=Medium}">
+            <Rectangle Fill="Red" Opacity="0.4">
+                <Rectangle.Style>
+                    <Style TargetType="Rectangle">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsGameOver}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="0.4" Duration="0:0:1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Rectangle.Style>
+            </Rectangle>
+            <TextBlock Text="game over!" Foreground="Red" FontSize="100" Margin="-1000" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="Yellow" ShadowDepth="0" BlurRadius="10"/>
+                </TextBlock.Effect>
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsGameOver}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:2"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="FontSize" From="400" To="100" Duration="0:0:2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+
+    </Grid>
 </Window>

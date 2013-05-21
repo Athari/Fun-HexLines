@@ -13,16 +13,17 @@ namespace HakunaMatata.HexLines
         public const int BallCellDelta = -20;
 
         private double _x, _y, _targetX, _targetY;
-        private bool _isMoving, _isDestroyed;
+        private bool _isMoving, _isDestroyed, _isNew;
         private Cell _cell;
 
         public Color Color { get; private set; }
 
-        private Ball (Cell cell, Color color)
+        private Ball (Cell cell, Color color, bool isNew)
         {
             Cell = cell;
             Cell.Ball = this;
             Color = color;
+            IsNew = isNew;
             X = cell.X + BallCellDelta;
             Y = cell.Y + BallCellDelta;
         }
@@ -57,6 +58,12 @@ namespace HakunaMatata.HexLines
             private set { Set(ref _targetY, value); }
         }
 
+        public bool IsNew
+        {
+            get { return Get(ref _isNew); }
+            private set { Set(ref _isNew, value); }
+        }
+
         public bool IsMoving
         {
             get { return Get(ref _isMoving); }
@@ -73,17 +80,11 @@ namespace HakunaMatata.HexLines
         {
             get
             {
-                //return new SolidColorBrush(Color);
-                return new RadialGradientBrush(new GradientStopCollection {
-                    new GradientStop(Colors.WhiteSmoke, 0),
-                    new GradientStop(Color, 0.2),
-                    new GradientStop(Color.Darker(0.5f), 0.7),
-                    new GradientStop(Color.Darker(0.9f), 1),
-                }) {
-                    GradientOrigin = new Point(.3, .35),
-                    MappingMode = BrushMappingMode.RelativeToBoundingBox,
-                    SpreadMethod = GradientSpreadMethod.Pad,
-                };
+                return new RadialGradientBrush { GradientOrigin = new Point(.3, .35) }
+                    .Add(Colors.WhiteSmoke, 0)
+                    .Add(Color, 0.2)
+                    .Add(Color.Darker(0.5f), 0.7)
+                    .Add(Color.Darker(0.9f), 1);
             }
         }
 
@@ -107,17 +108,21 @@ namespace HakunaMatata.HexLines
             IsMoving = false;
         }
 
+        public void Grow ()
+        {
+            IsNew = false;
+        }
+
         public void Destroy ()
         {
-            Cell.Ball = null;
-            Cell = null;
+            StartMoveTo(null);
             IsDestroyed = true;
         }
 
-        public static IEnumerable<Ball> GenerateBalls (Table table, int count)
+        public static IEnumerable<Ball> GenerateBalls (Table table, int count, bool isNew)
         {
-            return table.Cells.Count.Range().Shuffle().Take(count).Select(ic =>
-                new Ball(table.Cells[ic], table.BallColors.RandomItem()));
+            return table.EmptyCells.Shuffle().Take(count).Select(c =>
+                new Ball(c, table.BallColors.RandomItem(), isNew));
         }
     }
 }

@@ -19,13 +19,21 @@ namespace HakunaMatata.HexLines
 
         public MainWindow ()
         {
-            _table.Mode = GameMode.Groups;
+            _table.NewGame(GameMode.Groups);
             _table.Resize(20, 10);
             _table.GenerateBallColors(8);
-            _table.GenerateBalls(60);
+            _table.GenerateBalls(195);
 
             DataContext = _table;
             InitializeComponent();
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        }
+
+        private void CurrentDomain_UnhandledException (object sender, UnhandledExceptionEventArgs args)
+        {
+            MessageBox.Show(this, args.ExceptionObject + "\n\nApplication will terminate now.", "Unhandled exception :(", MessageBoxButton.OK, MessageBoxImage.Error);
+            Environment.Exit(0);
         }
 
         protected override void OnKeyDown (KeyEventArgs e)
@@ -33,9 +41,10 @@ namespace HakunaMatata.HexLines
             switch (e.Key) {
                 case Key.F2:
                     var rnd = new Random();
+                    _table.NewGame(GameMode.Groups);
                     _table.Resize(rnd.Next(8, 30), rnd.Next(8, 16));
                     _table.GenerateBallColors(8);
-                    _table.GenerateBalls(rnd.Next(10, _table.Cells.Count));
+                    _table.GenerateBalls(rnd.Next(10, _table.Cells.Count - 10));
                     break;
             }
             base.OnKeyDown(e);
@@ -52,7 +61,7 @@ namespace HakunaMatata.HexLines
                 _table.SelectedCell = null;
                 AnimateMoveBall(selectedBall, selectedCell, cell);
             }
-            else if (cell.Ball != null) {
+            else if (cell.Ball != null && !cell.Ball.IsNew) {
                 _table.SelectedCell = cell;
             }
         }
@@ -60,7 +69,6 @@ namespace HakunaMatata.HexLines
         private void AnimateMoveBall (Ball ball, Cell fromCell, Cell toCell)
         {
             List<Point> path = _table.FindPath(fromCell, toCell).Select(c => c.BallPoint).ToList();
-            _table.MovingBall = ball;
             _table.StartMoveBallTo(ball, toCell);
 
             TimeSpan duration = TimeSpan.FromSeconds(AnimMovingBallStep * path.Count);
