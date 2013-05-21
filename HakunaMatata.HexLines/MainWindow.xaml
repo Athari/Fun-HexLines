@@ -4,13 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         xmlns:ctl="clr-namespace:Alba.Framework.Controls;assembly=Alba.Framework"
+        xmlns:xx="clr-namespace:Alba.Framework.Markup;assembly=Alba.Framework"
         xmlns:conv="clr-namespace:Alba.Framework.Markup.Converters;assembly=Alba.Framework"
         xmlns:hex="clr-namespace:HakunaMatata.HexLines"
         d:DataContext="{d:DesignInstance hex:Table}"
         Title="Hex Lines" SizeToContent="WidthAndHeight"
         Background="Indigo">
     <Control.Resources>
-        
+
         <conv:BoolToVisibilityConverter x:Key="convBoolToVis"/>
 
         <Style TargetType="ItemsControl">
@@ -58,16 +59,14 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type hex:Ball}">
-            <Ellipse x:Name="figBall" Width="40" Height="40" IsHitTestVisible="False" Fill="{Binding BallColorBrush}">
+            <Ellipse x:Name="figBall" Width="40" Height="40" IsHitTestVisible="False" Fill="{Binding BallColorBrush}"
+                    Effect="{xx:DropShadowEffect Color=DarkBlue, Opacity=0.5, ShadowDepth=2, BlurRadius=7}">
                 <Ellipse.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform x:Name="transformScale" CenterX="20" CenterY="20"/>
                         <RotateTransform x:Name="transformRotate" CenterX="20" CenterY="20"/>
                     </TransformGroup>
                 </Ellipse.RenderTransform>
-                <Ellipse.Effect>
-                    <DropShadowEffect Color="DarkBlue" Opacity="0.5" ShadowDepth="2" BlurRadius="7"/>
-                </Ellipse.Effect>
             </Ellipse>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsNew}" Value="True">
@@ -146,44 +145,22 @@
             <ItemsControl x:Name="lstBalls" ItemsSource="{Binding Balls}" IsHitTestVisible="False"/>
         </Grid>
 
-        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Visibility="{Binding IsGameOver, Converter={StaticResource convBoolToVis}, PresentationTraceSources.TraceLevel=Medium}">
-            <Rectangle Fill="Red" Opacity="0.4">
-                <Rectangle.Style>
-                    <Style TargetType="Rectangle">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsGameOver}" Value="True">
-                                <DataTrigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="0.4" Duration="0:0:1"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </DataTrigger.EnterActions>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Rectangle.Style>
+        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Visibility="{Binding IsGameOver, Converter={StaticResource convBoolToVis}}">
+            <Rectangle Fill="Red" ctl:AnimProps.Animate="True">
+                <ctl:AnimProps.Animations>
+                    <ctl:Animation Binding="{Binding IsGameOver}" Value="True" Dir="Enter" Last="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="0.4" Duration="0:0:2"/>
+                    </ctl:Animation>
+                </ctl:AnimProps.Animations>
             </Rectangle>
-            <TextBlock Text="game over!" Foreground="Red" FontSize="100" Margin="-1000" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock.Effect>
-                    <DropShadowEffect Color="Yellow" ShadowDepth="0" BlurRadius="10"/>
-                </TextBlock.Effect>
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsGameOver}" Value="True">
-                                <DataTrigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:2"/>
-                                            <DoubleAnimation Storyboard.TargetProperty="FontSize" From="400" To="100" Duration="0:0:2"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </DataTrigger.EnterActions>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
+            <TextBlock Text="game over!" Foreground="Red" FontSize="100" Margin="-1000" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Effect="{xx:DropShadowEffect Color=Black, ShadowDepth=0, BlurRadius=10}" ctl:AnimProps.Animate="True">
+                <ctl:AnimProps.Animations>
+                    <ctl:Animation Binding="{Binding IsGameOver}" Value="True" Dir="Enter" Last="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:2"/>
+                        <DoubleAnimation Storyboard.TargetProperty="FontSize" From="400" To="100" Duration="0:0:2"/>
+                    </ctl:Animation>
+                </ctl:AnimProps.Animations>
             </TextBlock>
         </Grid>
 
