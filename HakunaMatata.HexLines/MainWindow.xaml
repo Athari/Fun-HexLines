@@ -59,15 +59,22 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type hex:Ball}">
-            <Ellipse x:Name="figBall" Width="40" Height="40" IsHitTestVisible="False" Fill="{Binding BallColorBrush}"
-                    Effect="{xx:DropShadowEffect Color=DarkBlue, Opacity=0.5, ShadowDepth=2, BlurRadius=7}">
-                <Ellipse.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform x:Name="transformScale" CenterX="20" CenterY="20"/>
-                        <RotateTransform x:Name="transformRotate" CenterX="20" CenterY="20"/>
-                    </TransformGroup>
-                </Ellipse.RenderTransform>
-            </Ellipse>
+            <Grid>
+                <Ellipse x:Name="figShadow" Width="40" Height="40" IsHitTestVisible="False" Fill="Black" Opacity="0.5" Margin="3 2 -3 -2"
+                         Effect="{xx:BlurEffect KernelType=Box, Radius=5}"/>
+                <Ellipse x:Name="figBall" Width="40" Height="40" IsHitTestVisible="False" Fill="{Binding BallColorBrush}">
+                    <Ellipse.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="transformSqueeze" CenterX="20" CenterY="20"/>
+                            <RotateTransform x:Name="transformRotate" CenterX="20" CenterY="20"/>
+                            <TranslateTransform x:Name="transformPos"/>
+                        </TransformGroup>
+                    </Ellipse.RenderTransform>
+                </Ellipse>
+                <Grid.RenderTransform>
+                    <ScaleTransform x:Name="transformScale" CenterX="20" CenterY="20"/>
+                </Grid.RenderTransform>
+            </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsNew}" Value="True">
                     <DataTrigger.EnterActions>
@@ -93,8 +100,8 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation ctl:AnimProps.Target="transformRotate.Angle" By="360" Duration="0:0:0.2" RepeatBehavior="Forever"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" To="1.2" Duration="0:0:0.2"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" To="0.9" Duration="0:0:0.2"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleX" To="1.2" Duration="0:0:0.2"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleY" To="0.9" Duration="0:0:0.2"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </DataTrigger.EnterActions>
@@ -102,8 +109,8 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation ctl:AnimProps.Target="transformRotate.Angle" To="0" Duration="0:0:0.02"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" To="1" Duration="0:0:0.2"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" To="1" Duration="0:0:0.2"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleX" To="1" Duration="0:0:0.2"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleY" To="1" Duration="0:0:0.2"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </DataTrigger.ExitActions>
@@ -113,12 +120,35 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation ctl:AnimProps.Target="figBall.Opacity" To="0" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="figShadow.Opacity" To="0" Duration="0:0:0.2"/>
                                 <DoubleAnimation ctl:AnimProps.Target="transformRotate.Angle" By="3600" Duration="0:0:0.3" AccelerationRatio="1"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" To="1.7" Duration="0:0:0.3"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" To="0.5" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleX" To="1.7" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleY" To="0.5" Duration="0:0:0.3"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </DataTrigger.EnterActions>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Cell.IsSelected}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimation ctl:AnimProps.Target="transformPos.Y" To="-10" BeginTime="0:0:0.0" Duration="0:0:0.2" DecelerationRatio="1"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformPos.Y" To="0" BeginTime="0:0:0.2" Duration="0:0:0.2" AccelerationRatio="1"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformPos.Y" To="5" BeginTime="0:0:0.4" Duration="0:0:0.1"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformPos.Y" To="0" BeginTime="0:0:0.5" Duration="0:0:0.1"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleY" To="0.75" BeginTime="0:0:0.4" Duration="0:0:0.1"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleY" To="1.0" BeginTime="0:0:0.5" Duration="0:0:0.1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation ctl:AnimProps.Target="transformPos.Y" To="0" Duration="0:0:0.1"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformSqueeze.ScaleY" To="1.0" Duration="0:0:0.1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
