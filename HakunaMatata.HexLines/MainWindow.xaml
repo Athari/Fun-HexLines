@@ -61,7 +61,7 @@
         <DataTemplate DataType="{x:Type hex:Ball}">
             <Grid>
                 <Ellipse x:Name="figShadow" Width="40" Height="40" IsHitTestVisible="False" Fill="Black" Opacity="0.5" Margin="3 2 -3 -2"
-                         Effect="{xx:BlurEffect KernelType=Box, Radius=5}"/>
+                        Effect="{xx:BlurEffect KernelType=Box, Radius=5}"/>
                 <Ellipse x:Name="figBall" Width="40" Height="40" IsHitTestVisible="False" Fill="{Binding BallColorBrush}">
                     <Ellipse.RenderTransform>
                         <TransformGroup>
@@ -165,9 +165,11 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Column="0" Grid.Row="0" Height="40">
-            <TextBlock Text="888888" Foreground="Green" FontSize="30" Margin="30 0" VerticalAlignment="Center"/>
-            <TextBlock Text="{Binding Score, StringFormat=000000}" Foreground="Yellow" FontSize="30" Margin="30 0" VerticalAlignment="Center"/>
+        <Grid Grid.Column="0" Grid.Row="0" Height="60">
+            <TextBlock Text="888888" Foreground="Green" FontSize="40" FontFamily="Resources/#Digital"
+                    Margin="30 0" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Score, StringFormat=000000}" Foreground="Yellow" FontSize="40" FontFamily="Resources/#Digital"
+                    Margin="30 0" VerticalAlignment="Center"/>
         </Grid>
 
         <Grid Grid.Column="0" Grid.Row="1" Margin="10 0 10 10">
@@ -183,7 +185,8 @@
                     </ctl:Animation>
                 </ctl:AnimProps.Animations>
             </Rectangle>
-            <TextBlock Text="game over!" Foreground="Red" FontSize="100" Margin="-1000" VerticalAlignment="Center" HorizontalAlignment="Center"
+            <TextBlock Text="GAME OVER!" Foreground="Red" FontSize="100" FontFamily="Resources/#Digital"
+                    Margin="-1000" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Effect="{xx:DropShadowEffect Color=Black, ShadowDepth=0, BlurRadius=10}" ctl:AnimProps.Animate="True">
                 <ctl:AnimProps.Animations>
                     <ctl:Animation Binding="{Binding IsGameOver}" Value="True" Dir="Enter" Last="True">
