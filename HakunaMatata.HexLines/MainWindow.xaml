@@ -185,8 +185,8 @@
                     </ctl:Animation>
                 </ctl:AnimProps.Animations>
             </Rectangle>
-            <TextBlock Text="GAME OVER!" Foreground="Red" FontSize="100" FontFamily="Resources/#Digital"
-                    Margin="-1000" VerticalAlignment="Center" HorizontalAlignment="Center"
+            <TextBlock Text="{Binding Score, StringFormat='GAME OVER!&#10;SCORE: {0}'}" Foreground="Red" FontSize="100" FontFamily="Resources/#Digital"
+                    Margin="-1000" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center"
                     Effect="{xx:DropShadowEffect Color=Black, ShadowDepth=0, BlurRadius=10}" ctl:AnimProps.Animate="True">
                 <ctl:AnimProps.Animations>
                     <ctl:Animation Binding="{Binding IsGameOver}" Value="True" Dir="Enter" Last="True">
