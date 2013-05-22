@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,15 +21,24 @@ namespace HakunaMatata.HexLines
 
         public MainWindow ()
         {
-            _table.NewGame(GameMode.Groups);
             _table.Resize(20, 10);
             _table.GenerateBallColors(8);
-            _table.GenerateBalls(195);
+            _table.GenerateBalls(60);
+            _table.NewGame(GameMode.Groups);
 
             DataContext = _table;
             InitializeComponent();
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            FuckOffDearWpfTrace();
+        }
+
+        private static void FuckOffDearWpfTrace ()
+        {
+            typeof(PresentationTraceSources).GetProperties(BindingFlags.Static | BindingFlags.Public)
+                .Where(prop => prop.PropertyType == typeof(TraceSource) && prop.Name != "DataBindingSource")
+                .Select(prop => (TraceSource)prop.GetValue(null))
+                .ForEach(trace => trace.Listeners.Clear());
         }
 
         private void CurrentDomain_UnhandledException (object sender, UnhandledExceptionEventArgs args)
@@ -41,10 +52,10 @@ namespace HakunaMatata.HexLines
             switch (e.Key) {
                 case Key.F2:
                     var rnd = new Random();
-                    _table.NewGame(GameMode.Groups);
                     _table.Resize(rnd.Next(8, 30), rnd.Next(8, 16));
                     _table.GenerateBallColors(8);
                     _table.GenerateBalls(rnd.Next(10, _table.Cells.Count - 10));
+                    _table.NewGame(GameMode.Groups);
                     break;
             }
             base.OnKeyDown(e);

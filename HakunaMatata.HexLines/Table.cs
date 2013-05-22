@@ -61,6 +61,8 @@ namespace HakunaMatata.HexLines
             get { return _selectedCell; }
             set
             {
+                if (_selectedCell == value)
+                    return;
                 UpdateSelection(_selectedCell, false);
                 UpdateSelection(_selectedCell = value, true);
             }
@@ -163,25 +165,27 @@ namespace HakunaMatata.HexLines
             }
             MovingBall = ball;
             MovingBall.StartMoveTo(toCell);
-            GrowBalls();
-            AddNewBalls();
         }
 
         public void EndMoveBallTo ()
         {
             MovingBall.EndMoveTo();
-            DestroyBallGroups(silent: false);
+            if (DestroyBallGroups(silent: false) > 0)
+                return;
+            GrowBalls();
+            AddNewBalls();
         }
 
-        private void DestroyBallGroups (bool silent)
+        private int DestroyBallGroups (bool silent)
         {
             var getDestroyableGroups = new Dictionary<GameMode, Func<int, IEnumerable<IEnumerable<int>>>> {
                 { GameMode.Lines, GetDestroyableLinesAndUpdateScore },
                 { GameMode.Groups, GetDestroyableGroupsAndUpdateScore },
             }[Mode];
-            Cells.Count.Range().SelectMany(getDestroyableGroups).Flatten()
+            return Cells.Count.Range().SelectMany(getDestroyableGroups).Flatten()
                 .Select(ic => Cells[ic].Ball).Where(ball => ball != null)
-                .ForEach(ball => DestroyBall(ball, silent));
+                .Do(ball => DestroyBall(ball, silent))
+                .Count();
         }
 
         private IEnumerable<IEnumerable<int>> GetDestroyableLinesAndUpdateScore (int ic)

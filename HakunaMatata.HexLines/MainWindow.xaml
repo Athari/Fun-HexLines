@@ -8,7 +8,7 @@
         xmlns:conv="clr-namespace:Alba.Framework.Markup.Converters;assembly=Alba.Framework"
         xmlns:hex="clr-namespace:HakunaMatata.HexLines"
         d:DataContext="{d:DesignInstance hex:Table}"
-        Title="Hex Lines" SizeToContent="WidthAndHeight"
+        Title="Hex Lines" SizeToContent="WidthAndHeight" ResizeMode="CanMinimize"
         Background="Indigo">
     <Control.Resources>
 
