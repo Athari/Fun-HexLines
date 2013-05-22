@@ -179,7 +179,7 @@ namespace HakunaMatata.HexLines
                 { GameMode.Lines, GetDestroyableLinesAndUpdateScore },
                 { GameMode.Groups, GetDestroyableGroupsAndUpdateScore },
             }[Mode];
-            Cells.Count.Range().SelectMany(getDestroyableGroups).SelectMany()
+            Cells.Count.Range().SelectMany(getDestroyableGroups).Flatten()
                 .Select(ic => Cells[ic].Ball).Where(ball => ball != null)
                 .ForEach(ball => DestroyBall(ball, silent));
         }
