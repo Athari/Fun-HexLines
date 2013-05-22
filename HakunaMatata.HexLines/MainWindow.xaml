@@ -14,7 +14,7 @@
 
         <conv:BoolToVisibilityConverter x:Key="convBoolToVis"/>
 
-        <Style TargetType="ItemsControl">
+        <Style x:Key="styLstCells" TargetType="ItemsControl">
             <Setter Property="Width" Value="{Binding Width}"/>
             <Setter Property="Height" Value="{Binding Height}"/>
             <Setter Property="ItemsPanel">
@@ -81,8 +81,9 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation ctl:AnimProps.Target="figBall.Opacity" From="0" To="1" Duration="0:0:0.3"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" From="0.2" To="0.6" Duration="0:0:0"/>
-                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" From="0.2" To="0.6" Duration="0:0:0"/>
+                                <DoubleAnimation ctl:AnimProps.Target="figShadow.Opacity" From="0" To="0.5" Duration="0:0:0.3"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleX" From="0.2" To="0.6" Duration="0:0:0.2" DecelerationRatio="1"/>
+                                <DoubleAnimation ctl:AnimProps.Target="transformScale.ScaleY" From="0.2" To="0.6" Duration="0:0:0.2" DecelerationRatio="1"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </DataTrigger.EnterActions>
@@ -165,18 +166,34 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Header -->
         <Grid Grid.Column="0" Grid.Row="0" Height="60">
-            <TextBlock Text="888888" Foreground="Green" FontSize="40" FontFamily="Resources/#Digital"
-                    Margin="30 0" VerticalAlignment="Center"/>
-            <TextBlock Text="{Binding Score, StringFormat=000000}" Foreground="Yellow" FontSize="40" FontFamily="Resources/#Digital"
-                    Margin="30 0" VerticalAlignment="Center"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <!-- Score -->
+            <TextBlock Grid.Column="0" Text="888888" Foreground="Green" FontSize="40" FontFamily="Resources/#Digital"
+                    Margin="30 0" VerticalAlignment="Center" TextAlignment="Right"/>
+            <TextBlock Grid.Column="0" Text="{Binding Score}" Foreground="Yellow" FontSize="40" FontFamily="Resources/#Digital"
+                    Margin="30 0" VerticalAlignment="Center" TextAlignment="Right"/>
+            <!-- Next balls -->
+            <ItemsControl Grid.Column="1" ItemsSource="{Binding NewBalls}" VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel IsItemsHost="True" Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
         </Grid>
 
+        <!-- Table -->
         <Grid Grid.Column="0" Grid.Row="1" Margin="10 0 10 10">
-            <ItemsControl ItemsSource="{Binding Cells}" MouseDown="LstTable_OnMouseDown"/>
-            <ItemsControl x:Name="lstBalls" ItemsSource="{Binding Balls}" IsHitTestVisible="False"/>
+            <ItemsControl ItemsSource="{Binding Cells}" MouseDown="LstTable_OnMouseDown" Style="{StaticResource styLstCells}"/>
+            <ItemsControl x:Name="lstBalls" ItemsSource="{Binding Balls}" Style="{StaticResource styLstCells}" IsHitTestVisible="False"/>
         </Grid>
 
+        <!-- Game over overlay -->
         <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Visibility="{Binding IsGameOver, Converter={StaticResource convBoolToVis}}">
             <Rectangle Fill="Red" ctl:AnimProps.Animate="True">
                 <ctl:AnimProps.Animations>

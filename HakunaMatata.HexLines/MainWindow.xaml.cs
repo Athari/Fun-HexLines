@@ -24,7 +24,7 @@ namespace HakunaMatata.HexLines
             _table.Resize(20, 10);
             _table.GenerateBallColors(8);
             _table.GenerateBalls(60);
-            _table.NewGame(GameMode.Groups);
+            _table.NewGame();
 
             DataContext = _table;
             InitializeComponent();
