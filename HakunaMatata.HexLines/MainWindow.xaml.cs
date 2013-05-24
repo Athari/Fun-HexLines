@@ -113,5 +113,14 @@ namespace HakunaMatata.HexLines
             if (e.ChangedButton == MouseButton.Right)
                 _table.SelectedCell = null;
         }
+
+        private void BtnNewGame_OnClick (object sender, RoutedEventArgs e)
+        {
+            _table.Resize(_table.Options.TableCellWidth, _table.Options.TableCellHeight);
+            _table.GenerateBallColors(_table.Options.BallColorsCount);
+            _table.GenerateBalls((int)(GameConstants.StartBallFillRatio * _table.Cells.Count));
+            _table.NewGame((GameMode)(((FrameworkElement)e.Source).Tag));
+            chkNewButton.IsChecked = false;
+        }
     }
 }

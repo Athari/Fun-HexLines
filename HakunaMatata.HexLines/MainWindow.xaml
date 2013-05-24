@@ -8,13 +8,43 @@
         xmlns:conv="clr-namespace:Alba.Framework.Markup.Converters;assembly=Alba.Framework"
         xmlns:hex="clr-namespace:HakunaMatata.HexLines"
         d:DataContext="{d:DesignInstance hex:Table}"
-        Title="Hex Lines" SizeToContent="WidthAndHeight" ResizeMode="CanMinimize"
+        Title="Hex Lines" SizeToContent="WidthAndHeight"
         Background="Indigo">
     <Control.Resources>
 
         <conv:BoolToVisibilityConverter x:Key="convBoolToVis"/>
 
+        <Style x:Key="styBtnBase" TargetType="ButtonBase">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Padding" Value="10 3"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Foreground" Value="Indigo"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ButtonBase">
+                        <Border x:Name="brdButton" BorderBrush="SteelBlue" BorderThickness="2" Background="LightSkyBlue" CornerRadius="5">
+                            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="brdButton" Property="Background" Value="DeepSkyBlue"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="brdButton" Property="Background" Value="PaleGreen"/>
+                                <Setter TargetName="brdButton" Property="BorderThickness" Value="3"/>
+                                <Setter TargetName="brdButton" Property="Margin" Value="-1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource styBtnBase}"/>
+        <Style TargetType="ToggleButton" BasedOn="{StaticResource styBtnBase}"/>
+
         <Style x:Key="styLstCells" TargetType="ItemsControl">
+            <Setter Property="Focusable" Value="False"/>
             <Setter Property="Width" Value="{Binding Width}"/>
             <Setter Property="Height" Value="{Binding Height}"/>
             <Setter Property="ItemsPanel">
@@ -167,25 +197,66 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Column="0" Grid.Row="0" Height="60">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <DockPanel Grid.Column="0" Grid.Row="0" Height="60" LastChildFill="False">
             <!-- Score -->
-            <TextBlock Grid.Column="0" Text="888888" Foreground="Green" FontSize="40" FontFamily="Resources/#Digital"
-                    Margin="30 0" VerticalAlignment="Center" TextAlignment="Right"/>
-            <TextBlock Grid.Column="0" Text="{Binding Score}" Foreground="Yellow" FontSize="40" FontFamily="Resources/#Digital"
-                    Margin="30 0" VerticalAlignment="Center" TextAlignment="Right"/>
+            <Grid VerticalAlignment="Center" Margin="30 0">
+                <TextBlock Text="888888" Foreground="Green" FontSize="40" FontFamily="Resources/#Digital" TextAlignment="Right"/>
+                <TextBlock Text="{Binding Score}" Foreground="Yellow" FontSize="40" FontFamily="Resources/#Digital" TextAlignment="Right"/>
+            </Grid>
             <!-- Next balls -->
-            <ItemsControl Grid.Column="1" ItemsSource="{Binding NewBalls}" VerticalAlignment="Center">
+            <ItemsControl ItemsSource="{Binding NewBalls}" VerticalAlignment="Center" MaxWidth="400">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel IsItemsHost="True" Orientation="Horizontal"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-        </Grid>
+            <!-- Menu -->
+            <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0 0 10 0" Height="40">
+                <Button Content="?"/>
+            </StackPanel>
+            <Grid DockPanel.Dock="Right" VerticalAlignment="Center" Height="40">
+                <Canvas Width="{Binding ActualWidth, ElementName=gridNewGame}" ClipToBounds="True">
+                    <Grid x:Name="gridNewGame">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0">
+                            <ToggleButton x:Name="chkNewButton" Content="New game" HorizontalAlignment="Right"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal">
+                            <Button Content="Lines" Tag="{x:Static hex:GameMode.Lines}" Click="BtnNewGame_OnClick"/>
+                            <Button Content="Groups" Tag="{x:Static hex:GameMode.Groups}" Click="BtnNewGame_OnClick"/>
+                            <Button Content="Options..." Tag="{x:Null}" Click="BtnNewGame_OnClick"/>
+                            <ToggleButton Content="Back" IsChecked="{Binding IsChecked, ElementName=chkNewButton, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsChecked, ElementName=chkNewButton}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Canvas.Top)" From="0" To="-40" Duration="0:0:0.5" DecelerationRatio="1"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Canvas.Top)" From="-40" To="0" Duration="0:0:0.5" DecelerationRatio="1"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                    </Grid>
+                </Canvas>
+            </Grid>
+        </DockPanel>
 
         <!-- Table -->
         <Grid Grid.Column="0" Grid.Row="1" Margin="10 0 10 10">
@@ -194,7 +265,7 @@
         </Grid>
 
         <!-- Game over overlay -->
-        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Visibility="{Binding IsGameOver, Converter={StaticResource convBoolToVis}}">
+        <Grid Grid.Column="0" Grid.Row="1" Visibility="{Binding IsGameOver, Converter={StaticResource convBoolToVis}}">
             <Rectangle Fill="Red" ctl:AnimProps.Animate="True">
                 <ctl:AnimProps.Animations>
                     <ctl:Animation Binding="{Binding IsGameOver}" Value="True" Dir="Enter" Last="True">

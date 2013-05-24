@@ -25,6 +25,7 @@ namespace HakunaMatata.HexLines
         public ObservableCollectionEx<Ball> NewBalls { get; private set; }
         public ObservableCollectionEx<Color> BallColors { get; private set; }
         public Ball MovingBall { get; private set; }
+        public GameOptions Options { get; private set; }
 
         public Table ()
         {
@@ -32,6 +33,7 @@ namespace HakunaMatata.HexLines
             Balls = new ObservableCollectionEx<Ball>();
             NewBalls = new ObservableCollectionEx<Ball>();
             BallColors = new ObservableCollectionEx<Color> { Colors.Orange };
+            Options = new GameOptions();
         }
 
         public int Score
@@ -72,7 +74,7 @@ namespace HakunaMatata.HexLines
 
         public double Width
         {
-            get { return (CellWidth + .5) * CellXOffset; }
+            get { return (CellWidth + .4) * CellXOffset; }
         }
 
         public double Height
@@ -124,7 +126,7 @@ namespace HakunaMatata.HexLines
 
         private void AddNewBalls ()
         {
-            List<Ball> newBalls = Ball.GenerateBalls(this, GameConstants.NewBallsCount, isNew: true).ToList();
+            List<Ball> newBalls = Ball.GenerateBalls(this, Options.NewBallsCount, isNew: true).ToList();
             Balls.AddRange(newBalls);
             NewBalls.Replace(newBalls);
             if (!EmptyCells.Any())
