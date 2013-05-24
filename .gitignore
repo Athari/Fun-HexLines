@@ -1,4 +1,5 @@
 /.nuget/NuGet.exe
+/Temp
 /Packages
 /TestResults
 .hg/

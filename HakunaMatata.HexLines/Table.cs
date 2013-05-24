@@ -241,17 +241,15 @@ namespace HakunaMatata.HexLines
 
         private IEnumerable<IndexWithDir> GetNeighborsIndicesWithDirs (int n)
         {
-            int h = CellHeight, d = ((n / h) & 1) - 1;
-            return new[] { new[] { n - 1, -3 }, new[] { n - h + d, -2 }, new[] { n - h + d + 1, -1 }, new[] { n + 1, 1 }, new[] { n + h + d + 1, 2 }, new[] { n + h + d, 3 } }
-                .Where(i => i[0] >= 0 && i[0] < Cells.Count && Math.Abs(i[0] % h - n % h) <= 1)
-                .Select(i => new IndexWithDir(this, i[0], i[1]));
+            Func<int, int, IndexWithDir> iwd = (i, d) => new IndexWithDir(this, i, d);
+            int h = CellHeight, Δ = ((n / h) & 1) - 1; // neighbor indices depend on wether the cell's column is odd
+            return new[] { iwd(n - 1, -3), iwd(n - h + Δ, -2), iwd(n - h + Δ + 1, -1), iwd(n + 1, 1), iwd(n + h + Δ + 1, 2), iwd(n + h + Δ, 3) }
+                .Where(i => i.IsValid && i.RowDistance(n) <= 1);
         }
 
         private IEnumerable<int> GetNeighborsIndices (int n)
         {
-            int h = CellHeight, d = ((n / h) & 1) - 1;
-            return new[] { n - 1, n - h + d, n - h + d + 1, n + 1, n + h + d + 1, n + h + d }
-                .Where(i => i >= 0 && i < Cells.Count && Math.Abs(i % h - n % h) <= 1);
+            return GetNeighborsIndicesWithDirs(n).Select(iwd => iwd.Index);
         }
 
         public static double GetCellX (int x, int y)
@@ -282,11 +280,21 @@ namespace HakunaMatata.HexLines
                 get { return Cell.Ball; }
             }
 
+            public bool IsValid
+            {
+                get { return 0 <= Index && Index < _table.Cells.Count; }
+            }
+
             public IndexWithDir (Table table, int index, int dir)
             {
                 _table = table;
                 Index = index;
                 Dir = dir;
+            }
+
+            public int RowDistance (int n)
+            {
+                return Math.Abs(Index % _table.CellHeight - n % _table.CellHeight);
             }
 
             public bool Equals (IndexWithDir other)
