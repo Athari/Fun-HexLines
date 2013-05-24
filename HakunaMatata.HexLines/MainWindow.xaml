@@ -23,15 +23,17 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ButtonBase">
-                        <Border x:Name="brdButton" BorderBrush="SteelBlue" BorderThickness="2" Background="LightSkyBlue" CornerRadius="5">
+                        <Border x:Name="brdButton" BorderBrush="SteelBlue" BorderThickness="2"
+                                Background="{xx:LinearGradientBrush2 #BAE1FA, LightSkyBlue, 90}" CornerRadius="5"
+                                Effect="{xx:DropShadowEffect Opacity=0.3, ShadowDepth=3, BlurRadius=5}">
                             <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="brdButton" Property="Background" Value="DeepSkyBlue"/>
+                                <Setter TargetName="brdButton" Property="Background" Value="{xx:LinearGradientBrush2 #66D9FF, DeepSkyBlue, 90}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="brdButton" Property="Background" Value="PaleGreen"/>
+                                <Setter TargetName="brdButton" Property="Background" Value="{xx:LinearGradientBrush2 #D7FBD7, PaleGreen, 90}"/>
                                 <Setter TargetName="brdButton" Property="BorderThickness" Value="3"/>
                                 <Setter TargetName="brdButton" Property="Margin" Value="-1"/>
                             </Trigger>
@@ -66,24 +68,24 @@
 
         <DataTemplate DataType="{x:Type hex:Cell}">
             <Polygon x:Name="figCell" Points="15,-26 30,0 15,26 -15,26 -30,0 -15,-26"
-                    Stroke="SteelBlue" StrokeThickness="2" Fill="LightSkyBlue"
+                    Stroke="SteelBlue" StrokeThickness="2" Fill="{xx:LinearGradientBrush2 #BAE1FA, LightSkyBlue, 60}"
                     MouseDown="FigCell_OnMouseDown"/>
             <DataTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="figCell" Property="Fill" Value="DeepSkyBlue"/>
+                    <Setter TargetName="figCell" Property="Fill" Value="{xx:LinearGradientBrush2 #66D9FF, DeepSkyBlue, 60}"/>
                 </Trigger>
                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                     <Setter TargetName="figCell" Property="Fill" Value="Yellow"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsAvailable}" Value="True">
-                    <Setter TargetName="figCell" Property="Fill" Value="PaleGreen"/>
+                    <Setter TargetName="figCell" Property="Fill" Value="{xx:LinearGradientBrush2 #D7FBD7, PaleGreen, 60}"/>
                 </DataTrigger>
                 <MultiDataTrigger>
                     <MultiDataTrigger.Conditions>
                         <Condition Binding="{Binding IsMouseOver, ElementName=figCell}" Value="True"/>
                         <Condition Binding="{Binding IsAvailable}" Value="True"/>
                     </MultiDataTrigger.Conditions>
-                    <Setter TargetName="figCell" Property="Fill" Value="YellowGreen"/>
+                    <Setter TargetName="figCell" Property="Fill" Value="{xx:LinearGradientBrush2 #C0FF3E, YellowGreen, 60}"/>
                 </MultiDataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
