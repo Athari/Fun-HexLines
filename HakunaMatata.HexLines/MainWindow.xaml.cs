@@ -30,12 +30,6 @@ namespace HakunaMatata.HexLines
             FuckOffDearWpfTrace();
         }
 
-        protected override void OnClosed (EventArgs e)
-        {
-            _table.SaveOptions();
-            base.OnClosed(e);
-        }
-
         private void CurrentDomain_UnhandledException (object sender, UnhandledExceptionEventArgs args)
         {
             MessageBox.Show(this, args.ExceptionObject + "\n\nApplication will terminate now.", "Unhandled exception :(", MessageBoxButton.OK, MessageBoxImage.Error);

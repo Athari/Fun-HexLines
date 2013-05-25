@@ -19,6 +19,7 @@
         <conv:ErrorContentConverter x:Key="convErrorContent"/>
 
         <Style x:Key="styBtnBase" TargetType="ButtonBase">
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Focusable" Value="False"/>
             <Setter Property="Padding" Value="10 3"/>
             <Setter Property="Margin" Value="5"/>
@@ -71,7 +72,7 @@
         </Style>
 
         <DataTemplate DataType="{x:Type hex:Cell}">
-            <Polygon x:Name="figCell" Points="15,-26 30,0 15,26 -15,26 -30,0 -15,-26"
+            <Polygon x:Name="figCell" Points="15,-26 30,0 15,26 -15,26 -30,0 -15,-26" Cursor="Hand"
                     Stroke="SteelBlue" StrokeThickness="2" Fill="{xx:LinearGradientBrush2 #BAE1FA, LightSkyBlue, 60}"
                     MouseDown="FigCell_OnMouseDown"/>
             <DataTemplate.Triggers>
@@ -311,10 +312,80 @@
                 <Style TargetType="TextBox" BasedOn="{StaticResource styCtlBase}">
                     <Setter Property="Grid.Column" Value="1"/>
                     <Setter Property="Margin" Value="4"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TextBox">
+                                <Border BorderBrush="SteelBlue" BorderThickness="2"
+                                        Background="{xx:LinearGradientBrush2 LightBlue, White, 90}" CornerRadius="5">
+                                    <ScrollViewer x:Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+                <Style x:Key="stySliderThumb" TargetType="Thumb">
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="Focusable" Value="False"/>
+                    <Setter Property="OverridesDefaultStyle" Value="True"/>
+                    <Setter Property="Height" Value="20"/>
+                    <Setter Property="Width" Value="20"/>
+                    <Setter Property="Foreground" Value="Gray"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Thumb}">
+                                <Ellipse x:Name="figThumb">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush GradientOrigin=".3 .35">
+                                            <GradientStop Color="WhiteSmoke" Offset="0.0"/>
+                                            <GradientStop Color="LightSkyBlue" Offset="0.2"/>
+                                            <GradientStop Color="#4598C2" Offset="0.7"/>
+                                            <GradientStop Color="#1C475C" Offset="1.0"/>
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="figThumb" Property="Fill">
+                                            <Setter.Value>
+                                                <RadialGradientBrush GradientOrigin=".3 .35">
+                                                    <GradientStop Color="WhiteSmoke" Offset="0.0"/>
+                                                    <GradientStop Color="PaleGreen" Offset="0.2"/>
+                                                    <GradientStop Color="#54C454" Offset="0.7"/>
+                                                    <GradientStop Color="#245D24" Offset="1.0"/>
+                                                </RadialGradientBrush>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
 
                 <Style TargetType="Slider" BasedOn="{StaticResource styCtlBase}">
                     <Setter Property="Grid.Column" Value="2"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Slider">
+                                <Grid>
+                                    <Border x:Name="brdBack" Height="4" Margin="5 0" VerticalAlignment="Center"
+                                            BorderBrush="{xx:LinearGradientBrush2 White, SteelBlue, 90}" BorderThickness="1" CornerRadius="1"/>
+                                    <Track Name="PART_Track">
+                                        <Track.Thumb>
+                                            <Thumb Style="{StaticResource stySliderThumb}"/>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsMouseOver, ElementName=PART_Track}" Value="True">
+                                        <Setter TargetName="brdBack" Property="BorderBrush" Value="{xx:LinearGradientBrush2 White, YellowGreen, 90}"/>
+                                        <Setter TargetName="brdBack" Property="BorderThickness" Value="2"/>
+                                    </DataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
 
                 <Style TargetType="Image">
