@@ -4,7 +4,7 @@ namespace HakunaMatata.HexLines
 {
     public static class GameConstants
     {
-        public const string CompanyName = "Alba";
+        public const string CompanyName = "AlbaSoftLabs";
         public const string ProductName = "HexLines";
 
         public const int MinLineLength = 5;
