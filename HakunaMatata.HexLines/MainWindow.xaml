@@ -6,13 +6,17 @@
         xmlns:ctl="clr-namespace:Alba.Framework.Controls;assembly=Alba.Framework"
         xmlns:xx="clr-namespace:Alba.Framework.Markup;assembly=Alba.Framework"
         xmlns:conv="clr-namespace:Alba.Framework.Markup.Converters;assembly=Alba.Framework"
+        xmlns:dlg="clr-namespace:Alba.Framework.Mvvm.Dialogs;assembly=Alba.Framework"
         xmlns:hex="clr-namespace:HakunaMatata.HexLines"
         d:DataContext="{d:DesignInstance hex:Table}"
-        Title="Hex Lines" SizeToContent="WidthAndHeight"
+        Title="Hex Lines" SizeToContent="WidthAndHeight" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen"
+        TextOptions.TextFormattingMode="Display"
         Background="Indigo">
     <Control.Resources>
 
         <conv:BoolToVisibilityConverter x:Key="convBoolToVis"/>
+        <conv:BoolToVisibilityConverter x:Key="convBoolToVisHidden" Mode="VisibleHidden"/>
+        <conv:ErrorContentConverter x:Key="convErrorContent"/>
 
         <Style x:Key="styBtnBase" TargetType="ButtonBase">
             <Setter Property="Focusable" Value="False"/>
@@ -200,12 +204,14 @@
 
         <!-- Header -->
         <DockPanel Grid.Column="0" Grid.Row="0" Height="60" LastChildFill="False">
-            <!-- Score -->
+
+            <!-- Header: Score -->
             <Grid VerticalAlignment="Center" Margin="30 0">
                 <TextBlock Text="888888" Foreground="Green" FontSize="40" FontFamily="Resources/#Digital" TextAlignment="Right"/>
                 <TextBlock Text="{Binding Score}" Foreground="Yellow" FontSize="40" FontFamily="Resources/#Digital" TextAlignment="Right"/>
             </Grid>
-            <!-- Next balls -->
+
+            <!-- Header: Next balls -->
             <ItemsControl ItemsSource="{Binding NewBalls}" VerticalAlignment="Center" MaxWidth="400">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -213,7 +219,8 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <!-- Menu -->
+
+            <!-- Header: Menu -->
             <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0 0 10 0" Height="40">
                 <Button Content="?"/>
             </StackPanel>
@@ -230,7 +237,7 @@
                         <StackPanel Grid.Row="1" Orientation="Horizontal">
                             <Button Content="Lines" Tag="{x:Static hex:GameMode.Lines}" Click="BtnNewGame_OnClick"/>
                             <Button Content="Groups" Tag="{x:Static hex:GameMode.Groups}" Click="BtnNewGame_OnClick"/>
-                            <Button Content="Options..." Tag="{x:Null}" Click="BtnNewGame_OnClick"/>
+                            <ToggleButton x:Name="chkOptions" Content="Options..." Tag="{x:Null}"/>
                             <ToggleButton Content="Back" IsChecked="{Binding IsChecked, ElementName=chkNewButton, Mode=TwoWay}"/>
                         </StackPanel>
                         <Grid.Style>
@@ -266,7 +273,7 @@
             <ItemsControl x:Name="lstBalls" ItemsSource="{Binding Balls}" Style="{StaticResource styLstCells}" IsHitTestVisible="False"/>
         </Grid>
 
-        <!-- Game over overlay -->
+        <!-- Game Over overlay -->
         <Grid Grid.Column="0" Grid.Row="1" Visibility="{Binding IsGameOver, Converter={StaticResource convBoolToVis}}">
             <Rectangle Fill="Red" ctl:AnimProps.Animate="True">
                 <ctl:AnimProps.Animations>
@@ -285,6 +292,98 @@
                     </ctl:Animation>
                 </ctl:AnimProps.Animations>
             </TextBlock>
+        </Grid>
+
+        <!-- Options overlay -->
+        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Visibility="{Binding IsChecked, ElementName=chkOptions, Converter={StaticResource convBoolToVis}}">
+            <Grid.Resources>
+
+                <Style x:Key="styCtlBase" TargetType="Control">
+                    <Setter Property="FontSize" Value="16"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+
+                <Style TargetType="Label" BasedOn="{StaticResource styCtlBase}">
+                    <Setter Property="Grid.Column" Value="0"/>
+                    <Setter Property="Margin" Value="4 4 20 4"/>
+                </Style>
+
+                <Style TargetType="TextBox" BasedOn="{StaticResource styCtlBase}">
+                    <Setter Property="Grid.Column" Value="1"/>
+                    <Setter Property="Margin" Value="4"/>
+                </Style>
+
+                <Style TargetType="Slider" BasedOn="{StaticResource styCtlBase}">
+                    <Setter Property="Grid.Column" Value="2"/>
+                </Style>
+
+                <Style TargetType="Image">
+                    <Setter Property="Grid.Column" Value="3"/>
+                    <Setter Property="Stretch" Value="None"/>
+                    <Setter Property="Source" Value="Resources\Warning@16.png"/>
+                    <Setter Property="dlg:ValidationProps.Message" Value="{xx:SelfBinding (dlg:ValidationProps.ValidatesControl).(Validation.Errors), Converter={StaticResource convErrorContent}, FallbackValue={x:Null}}"/>
+                    <Setter Property="Visibility" Value="{xx:SelfBinding (dlg:ValidationProps.ValidatesControl).(Validation.HasError), Converter={StaticResource convBoolToVisHidden}}"/>
+                </Style>
+
+            </Grid.Resources>
+
+            <Rectangle Fill="Gray" Opacity="0.5"/>
+            <Border BorderBrush="SteelBlue" BorderThickness="2"
+                    Background="{xx:LinearGradientBrush2 #BAE1FA, LightSkyBlue, 90}" CornerRadius="5"
+                    Effect="{xx:DropShadowEffect Opacity=0.3, ShadowDepth=3, BlurRadius=5}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="1"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Content="Table width"/>
+                    <TextBox Grid.Row="0" x:Name="txtTableCellWidth" Text="{Binding Options.TableCellWidth, ValidatesOnDataErrors=True}"
+                            dlg:ValidationProps.ValidationIcon="{Binding ElementName=imgTableCellWidthError}"/>
+                    <Slider Grid.Row="0" Value="{Binding Options.TableCellWidth}"
+                            ctl:RangeProps.MinInt="{x:Static hex:GameOptions.MinTableCellWidth}" ctl:RangeProps.MaxInt="{x:Static hex:GameOptions.MaxTableCellWidth}"/>
+                    <Image Grid.Row="0" x:Name="imgTableCellWidthError" dlg:ValidationProps.ValidatesControl="{Binding ElementName=txtTableCellWidth}"/>
+
+                    <Label Grid.Row="1" Content="Table height"/>
+                    <TextBox Grid.Row="1" x:Name="txtTableCellHeight" Text="{Binding Options.TableCellHeight, ValidatesOnDataErrors=True}"
+                            dlg:ValidationProps.ValidationIcon="{Binding ElementName=imgTableCellHeightError}"/>
+                    <Slider Grid.Row="1" Value="{Binding Options.TableCellHeight}"
+                            ctl:RangeProps.MinInt="{x:Static hex:GameOptions.MinTableCellHeight}" ctl:RangeProps.MaxInt="{x:Static hex:GameOptions.MaxTableCellHeight}"/>
+                    <Image Grid.Row="1" x:Name="imgTableCellHeightError" dlg:ValidationProps.ValidatesControl="{Binding ElementName=txtTableCellHeight}"/>
+
+                    <Label Grid.Row="2" Content="Unique ball colors"/>
+                    <TextBox Grid.Row="2" x:Name="txtBallColorsCount" Text="{Binding Options.BallColorsCount, ValidatesOnDataErrors=True}"
+                            dlg:ValidationProps.ValidationIcon="{Binding ElementName=imgBallColorsCountError}"/>
+                    <Slider Grid.Row="2" Value="{Binding Options.BallColorsCount}"
+                            ctl:RangeProps.MinInt="{x:Static hex:GameOptions.MinBallColorsCount}" ctl:RangeProps.MaxInt="{x:Static hex:GameOptions.MaxBallColorsCount}"/>
+                    <Image Grid.Row="2" x:Name="imgBallColorsCountError" dlg:ValidationProps.ValidatesControl="{Binding ElementName=txtBallColorsCount}"/>
+
+                    <Label Grid.Row="3" Content="New balls each turn"/>
+                    <TextBox Grid.Row="3" x:Name="txtNewBallsCount" Text="{Binding Options.NewBallsCount, ValidatesOnDataErrors=True}"
+                            dlg:ValidationProps.ValidationIcon="{Binding ElementName=imgNewBallsCountError}"/>
+                    <Slider Grid.Row="3" Value="{Binding Options.NewBallsCount}"
+                            ctl:RangeProps.MinInt="{x:Static hex:GameOptions.MinNewBallsCount}" ctl:RangeProps.MaxInt="{x:Static hex:GameOptions.MaxNewBallsCount}"/>
+                    <Image Grid.Row="3" x:Name="imgNewBallsCountError" dlg:ValidationProps.ValidatesControl="{Binding ElementName=txtNewBallsCount}"/>
+
+                    <StackPanel Grid.Row="4" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 -30">
+                        <Button Content="Lines" Tag="{x:Static hex:GameMode.Lines}" Click="BtnNewGame_OnClick"/>
+                        <Button Content="Groups" Tag="{x:Static hex:GameMode.Groups}" Click="BtnNewGame_OnClick"/>
+                        <Button Content="Cancel" Click="BtnOptionsCancel_OnClick"/>
+                    </StackPanel>
+
+                </Grid>
+            </Border>
         </Grid>
 
     </Grid>

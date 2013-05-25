@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Media;
 using Alba.Framework.Collections;
 using Alba.Framework.Mvvm.Models;
+using Alba.Framework.Serialization.Json;
 using Alba.Framework.Wpf;
 
 namespace HakunaMatata.HexLines
@@ -14,6 +16,7 @@ namespace HakunaMatata.HexLines
     {
         public const double CellXOffset = 45;
         public const double CellYOffset = 52;
+        private const string OptionsFileName = "Options.jcfg";
 
         private int _score, _cellWidth, _cellHeight;
         private bool _isGameOver;
@@ -34,6 +37,7 @@ namespace HakunaMatata.HexLines
             NewBalls = new ObservableCollectionEx<Ball>();
             BallColors = new ObservableCollectionEx<Color> { Colors.Orange };
             Options = new GameOptions();
+            Json.PopulateFromFile(Options, OptionsFilePath);
         }
 
         public int Score
@@ -87,6 +91,16 @@ namespace HakunaMatata.HexLines
             get { return Cells.Where(c => c.Ball == null); }
         }
 
+        private string OptionsFilePath
+        {
+            get { return Path.Combine(GameConstants.RoamingAppDir, OptionsFileName); }
+        }
+
+        public void SaveOptions ()
+        {
+            Json.SerializeToFile(Options, OptionsFilePath);
+        }
+
         public void NewGame (GameMode mode = GameMode.Lines)
         {
             Mode = mode;
@@ -122,6 +136,7 @@ namespace HakunaMatata.HexLines
         private void GrowBalls ()
         {
             Balls.Where(b => b.IsNew).ForEach(b => b.Grow());
+            DestroyBallGroups(silent: false);
         }
 
         private void AddNewBalls ()
@@ -235,7 +250,7 @@ namespace HakunaMatata.HexLines
 
         private IEnumerable<IndexWithDir> GetSameNeighborsIndicesWithDirs (int n)
         {
-            if (Cells[n].Ball == null)
+            if (Cells[n].Ball == null || Cells[n].Ball.IsNew)
                 return new IndexWithDir[0];
             var color = Cells[n].Ball.Color;
             return GetNeighborsIndicesWithDirs(n).Where(iwd => iwd.Ball != null && iwd.Ball.Color == color && !iwd.Ball.IsNew);

@@ -21,10 +21,7 @@ namespace HakunaMatata.HexLines
 
         public MainWindow ()
         {
-            _table.Resize(20, 10);
-            _table.GenerateBallColors(8);
-            _table.GenerateBalls(60);
-            _table.NewGame();
+            StartNewGame();
 
             DataContext = _table;
             InitializeComponent();
@@ -33,32 +30,16 @@ namespace HakunaMatata.HexLines
             FuckOffDearWpfTrace();
         }
 
-        private static void FuckOffDearWpfTrace ()
+        protected override void OnClosed (EventArgs e)
         {
-            typeof(PresentationTraceSources).GetProperties(BindingFlags.Static | BindingFlags.Public)
-                .Where(prop => prop.PropertyType == typeof(TraceSource) && prop.Name != "DataBindingSource")
-                .Select(prop => (TraceSource)prop.GetValue(null))
-                .ForEach(trace => trace.Listeners.Clear());
+            _table.SaveOptions();
+            base.OnClosed(e);
         }
 
         private void CurrentDomain_UnhandledException (object sender, UnhandledExceptionEventArgs args)
         {
             MessageBox.Show(this, args.ExceptionObject + "\n\nApplication will terminate now.", "Unhandled exception :(", MessageBoxButton.OK, MessageBoxImage.Error);
             Environment.Exit(0);
-        }
-
-        protected override void OnKeyDown (KeyEventArgs e)
-        {
-            switch (e.Key) {
-                case Key.F2:
-                    var rnd = new Random();
-                    _table.Resize(rnd.Next(8, 30), rnd.Next(8, 16));
-                    _table.GenerateBallColors(8);
-                    _table.GenerateBalls(rnd.Next(10, _table.Cells.Count - 10));
-                    _table.NewGame(GameMode.Groups);
-                    break;
-            }
-            base.OnKeyDown(e);
         }
 
         private void FigCell_OnMouseDown (object sender, MouseButtonEventArgs e)
@@ -103,7 +84,6 @@ namespace HakunaMatata.HexLines
 
         private void AnimMove_OnCompleted (object sender, EventArgs e)
         {
-            _animMovingBall.Remove(lstBalls.GetItemContainer(_table.MovingBall));
             _animMovingBall = null;
             _table.EndMoveBallTo();
         }
@@ -116,11 +96,36 @@ namespace HakunaMatata.HexLines
 
         private void BtnNewGame_OnClick (object sender, RoutedEventArgs e)
         {
+            StartNewGame((GameMode)(((FrameworkElement)e.Source).Tag));
+            chkNewButton.IsChecked = false;
+            chkOptions.IsChecked = false;
+        }
+
+        private void BtnOptionsCancel_OnClick (object sender, RoutedEventArgs e)
+        {
+            _table.Options.TableCellWidth = _table.CellWidth;
+            _table.Options.TableCellHeight = _table.CellHeight;
+            _table.Options.BallColorsCount = _table.BallColors.Count;
+            if (!_table.IsGameOver)
+                _table.Options.NewBallsCount = _table.NewBalls.Count;
+            chkOptions.IsChecked = false;
+        }
+
+        private void StartNewGame (GameMode? mode = null)
+        {
             _table.Resize(_table.Options.TableCellWidth, _table.Options.TableCellHeight);
             _table.GenerateBallColors(_table.Options.BallColorsCount);
             _table.GenerateBalls((int)(GameConstants.StartBallFillRatio * _table.Cells.Count));
-            _table.NewGame((GameMode)(((FrameworkElement)e.Source).Tag));
-            chkNewButton.IsChecked = false;
+            _table.NewGame(_table.Options.Mode = (mode ?? _table.Options.Mode));
+            _table.SaveOptions();
+        }
+
+        private static void FuckOffDearWpfTrace ()
+        {
+            typeof(PresentationTraceSources).GetProperties(BindingFlags.Static | BindingFlags.Public)
+                .Where(prop => prop.PropertyType == typeof(TraceSource) && prop.Name != "DataBindingSource")
+                .Select(prop => (TraceSource)prop.GetValue(null))
+                .ForEach(trace => trace.Listeners.Clear());
         }
     }
 }
