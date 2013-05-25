@@ -21,7 +21,7 @@ namespace HakunaMatata.HexLines
             TableCellWidth = 20;
             TableCellHeight = 10;
             BallColorsCount = 8;
-            NewBallsCount = 30;
+            NewBallsCount = 3;
             Mode = GameMode.Lines;
         }
 

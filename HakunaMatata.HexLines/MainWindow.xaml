@@ -379,6 +379,7 @@
                     <StackPanel Grid.Row="4" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 -30">
                         <Button Content="Lines" Tag="{x:Static hex:GameMode.Lines}" Click="BtnNewGame_OnClick"/>
                         <Button Content="Groups" Tag="{x:Static hex:GameMode.Groups}" Click="BtnNewGame_OnClick"/>
+                        <Button Content="Reset" Click="BtnReset_OnClick"/>
                         <Button Content="Cancel" Click="BtnOptionsCancel_OnClick"/>
                     </StackPanel>
 

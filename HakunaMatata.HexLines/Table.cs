@@ -21,6 +21,7 @@ namespace HakunaMatata.HexLines
         private int _score, _cellWidth, _cellHeight;
         private bool _isGameOver;
         private Cell _selectedCell;
+        private GameOptions _options;
 
         public GameMode Mode { get; set; }
         public ObservableCollectionEx<Cell> Cells { get; private set; }
@@ -28,7 +29,6 @@ namespace HakunaMatata.HexLines
         public ObservableCollectionEx<Ball> NewBalls { get; private set; }
         public ObservableCollectionEx<Color> BallColors { get; private set; }
         public Ball MovingBall { get; private set; }
-        public GameOptions Options { get; private set; }
 
         public Table ()
         {
@@ -91,9 +91,20 @@ namespace HakunaMatata.HexLines
             get { return Cells.Where(c => c.Ball == null); }
         }
 
+        public GameOptions Options
+        {
+            get { return Get(ref _options); }
+            private set { Set(ref _options, value); }
+        }
+
         private string OptionsFilePath
         {
             get { return Path.Combine(GameConstants.RoamingAppDir, OptionsFileName); }
+        }
+
+        public void ResetOptions ()
+        {
+            Options = new GameOptions();
         }
 
         public void SaveOptions ()

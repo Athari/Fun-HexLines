@@ -111,6 +111,11 @@ namespace HakunaMatata.HexLines
             chkOptions.IsChecked = false;
         }
 
+        private void BtnReset_OnClick (object sender, RoutedEventArgs e)
+        {
+            _table.ResetOptions();
+        }
+
         private void StartNewGame (GameMode? mode = null)
         {
             _table.Resize(_table.Options.TableCellWidth, _table.Options.TableCellHeight);
