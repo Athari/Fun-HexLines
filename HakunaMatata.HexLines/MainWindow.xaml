@@ -172,7 +172,8 @@
             <!-- Header: Score -->
             <Grid VerticalAlignment="Center" Margin="30 0">
                 <TextBlock Text="888888" Foreground="Green" FontSize="40" FontFamily="Resources/#Digital" TextAlignment="Right"/>
-                <TextBlock Text="{Binding Score}" Foreground="Yellow" FontSize="40" FontFamily="Resources/#Digital" TextAlignment="Right"/>
+                <TextBlock Text="{Binding Score}" Foreground="Yellow" FontSize="40" FontFamily="Resources/#Digital" TextAlignment="Right"
+                           Effect="{xx:DropShadowEffect Color=White, BlurRadius=5, ShadowDepth=0}"/>
             </Grid>
 
             <!-- Header: Next balls -->
