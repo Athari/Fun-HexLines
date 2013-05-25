@@ -108,6 +108,8 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="Resources\BPreplay.ttf" />
+    <Resource Include="Resources\BPreplayBold.ttf" />
     <Resource Include="Resources\Digital.ttf" />
   </ItemGroup>
   <ItemGroup>

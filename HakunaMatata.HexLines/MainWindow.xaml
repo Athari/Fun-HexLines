@@ -185,19 +185,19 @@
             </ItemsControl>
 
             <!-- Header: Menu -->
-            <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0 0 10 0" Height="40">
-                <Button Content="?"/>
-            </StackPanel>
-            <Grid DockPanel.Dock="Right" VerticalAlignment="Center" Height="40" UseLayoutRounding="True">
+            <DockPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0 0 10 0" Height="60" UseLayoutRounding="True">
+                <Button DockPanel.Dock="Right" Content="?"/>
+            </DockPanel>
+            <Grid DockPanel.Dock="Right" VerticalAlignment="Center" Height="60" UseLayoutRounding="True">
                 <Canvas Width="{Binding ActualWidth, ElementName=gridNewGame}" ClipToBounds="True">
                     <Grid x:Name="gridNewGame">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="60"/>
+                            <RowDefinition Height="60"/>
                         </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0">
-                            <ToggleButton x:Name="chkNewButton" Content="New game" HorizontalAlignment="Right"/>
-                        </StackPanel>
+                        <DockPanel Grid.Row="0" LastChildFill="False">
+                            <ToggleButton x:Name="chkNewButton" DockPanel.Dock="Right" Content="New game"/>
+                        </DockPanel>
                         <StackPanel Grid.Row="1" Orientation="Horizontal">
                             <Button Content="Lines" Tag="{x:Static hex:GameMode.Lines}" Click="BtnNewGame_OnClick"/>
                             <Button Content="Groups" Tag="{x:Static hex:GameMode.Groups}" Click="BtnNewGame_OnClick"/>
@@ -211,14 +211,14 @@
                                         <DataTrigger.EnterActions>
                                             <BeginStoryboard>
                                                 <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(Canvas.Top)" From="0" To="-40" Duration="0:0:0.5" DecelerationRatio="1"/>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Canvas.Top)" From="0" To="-60" Duration="0:0:0.5" DecelerationRatio="1"/>
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </DataTrigger.EnterActions>
                                         <DataTrigger.ExitActions>
                                             <BeginStoryboard>
                                                 <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(Canvas.Top)" From="-40" To="0" Duration="0:0:0.5" DecelerationRatio="1"/>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Canvas.Top)" From="-60" To="0" Duration="0:0:0.5" DecelerationRatio="1"/>
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </DataTrigger.ExitActions>
@@ -265,7 +265,7 @@
         <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Visibility="{Binding IsChecked, ElementName=chkOptions, Converter={StaticResource convBoolToVis}}">
             <Grid.Resources>
 
-                <Style TargetType="Label">
+                <Style TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
                     <Setter Property="Grid.Column" Value="0"/>
                     <Setter Property="FontSize" Value="16"/>
                     <Setter Property="VerticalAlignment" Value="Center"/>
