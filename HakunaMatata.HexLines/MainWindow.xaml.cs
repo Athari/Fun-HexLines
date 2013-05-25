@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Alba.Framework.Sys;
 using Alba.Framework.Wpf;
 
 namespace HakunaMatata.HexLines
@@ -18,6 +19,7 @@ namespace HakunaMatata.HexLines
 
         private readonly Table _table = new Table();
         private Storyboard _animMovingBall;
+        private double scale = 1;
 
         public MainWindow ()
         {
@@ -30,10 +32,15 @@ namespace HakunaMatata.HexLines
             FuckOffDearWpfTrace();
         }
 
-        private void CurrentDomain_UnhandledException (object sender, UnhandledExceptionEventArgs args)
+        protected override void OnMouseWheel (MouseWheelEventArgs e)
         {
-            MessageBox.Show(this, args.ExceptionObject + "\n\nApplication will terminate now.", "Unhandled exception :(", MessageBoxButton.OK, MessageBoxImage.Error);
-            Environment.Exit(0);
+            base.OnMouseWheel(e);
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) {
+                scale *= e.Delta < 0 ? 0.95 : 1.05;
+                scale = scale.MinMax(0.6, 3);
+                transformTableScale.ScaleX = scale;
+                transformTableScale.ScaleY = scale;
+            }
         }
 
         private void FigCell_OnMouseDown (object sender, MouseButtonEventArgs e)
@@ -117,6 +124,12 @@ namespace HakunaMatata.HexLines
             _table.GenerateBalls((int)(GameConstants.StartBallFillRatio * _table.Cells.Count));
             _table.NewGame(_table.Options.Mode = (mode ?? _table.Options.Mode));
             _table.SaveOptions();
+        }
+
+        private void CurrentDomain_UnhandledException (object sender, UnhandledExceptionEventArgs args)
+        {
+            MessageBox.Show(this, args.ExceptionObject + "\n\nApplication will terminate now.", "Unhandled exception :(", MessageBoxButton.OK, MessageBoxImage.Error);
+            Environment.Exit(0);
         }
 
         private static void FuckOffDearWpfTrace ()

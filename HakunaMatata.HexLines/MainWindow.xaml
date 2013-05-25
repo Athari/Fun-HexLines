@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         xmlns:ctl="clr-namespace:Alba.Framework.Controls;assembly=Alba.Framework"
         xmlns:xx="clr-namespace:Alba.Framework.Markup;assembly=Alba.Framework"
-        xmlns:conv="clr-namespace:Alba.Framework.Markup.Converters;assembly=Alba.Framework"
         xmlns:dlg="clr-namespace:Alba.Framework.Mvvm.Dialogs;assembly=Alba.Framework"
         xmlns:hex="clr-namespace:HakunaMatata.HexLines"
         d:DataContext="{d:DesignInstance hex:Table}"
@@ -13,42 +12,6 @@
         TextOptions.TextFormattingMode="Display"
         Background="Indigo">
     <Control.Resources>
-
-        <conv:BoolToVisibilityConverter x:Key="convBoolToVis"/>
-        <conv:BoolToVisibilityConverter x:Key="convBoolToVisHidden" Mode="VisibleHidden"/>
-        <conv:ErrorContentConverter x:Key="convErrorContent"/>
-
-        <Style x:Key="styBtnBase" TargetType="ButtonBase">
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Focusable" Value="False"/>
-            <Setter Property="Padding" Value="10 3"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="Foreground" Value="Indigo"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ButtonBase">
-                        <Border x:Name="brdButton" BorderBrush="SteelBlue" BorderThickness="2"
-                                Background="{xx:LinearGradientBrush2 #BAE1FA, LightSkyBlue, 90}" CornerRadius="5"
-                                Effect="{xx:DropShadowEffect Opacity=0.3, ShadowDepth=3, BlurRadius=5}">
-                            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="brdButton" Property="Background" Value="{xx:LinearGradientBrush2 #66D9FF, DeepSkyBlue, 90}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="brdButton" Property="Background" Value="{xx:LinearGradientBrush2 #D7FBD7, PaleGreen, 90}"/>
-                                <Setter TargetName="brdButton" Property="BorderThickness" Value="3"/>
-                                <Setter TargetName="brdButton" Property="Margin" Value="-1"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="Button" BasedOn="{StaticResource styBtnBase}"/>
-        <Style TargetType="ToggleButton" BasedOn="{StaticResource styBtnBase}"/>
 
         <Style x:Key="styLstCells" TargetType="ItemsControl">
             <Setter Property="Focusable" Value="False"/>
@@ -225,7 +188,7 @@
             <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0 0 10 0" Height="40">
                 <Button Content="?"/>
             </StackPanel>
-            <Grid DockPanel.Dock="Right" VerticalAlignment="Center" Height="40">
+            <Grid DockPanel.Dock="Right" VerticalAlignment="Center" Height="40" UseLayoutRounding="True">
                 <Canvas Width="{Binding ActualWidth, ElementName=gridNewGame}" ClipToBounds="True">
                     <Grid x:Name="gridNewGame">
                         <Grid.RowDefinitions>
@@ -270,6 +233,9 @@
 
         <!-- Table -->
         <Grid Grid.Column="0" Grid.Row="1" Margin="10 0 10 10">
+            <Grid.LayoutTransform>
+                <ScaleTransform x:Name="transformTableScale"/>
+            </Grid.LayoutTransform>
             <ItemsControl ItemsSource="{Binding Cells}" MouseDown="LstTable_OnMouseDown" Style="{StaticResource styLstCells}"/>
             <ItemsControl x:Name="lstBalls" ItemsSource="{Binding Balls}" Style="{StaticResource styLstCells}" IsHitTestVisible="False"/>
         </Grid>
@@ -299,101 +265,30 @@
         <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Visibility="{Binding IsChecked, ElementName=chkOptions, Converter={StaticResource convBoolToVis}}">
             <Grid.Resources>
 
-                <Style x:Key="styCtlBase" TargetType="Control">
+                <Style TargetType="Label">
+                    <Setter Property="Grid.Column" Value="0"/>
                     <Setter Property="FontSize" Value="16"/>
                     <Setter Property="VerticalAlignment" Value="Center"/>
-                </Style>
-
-                <Style TargetType="Label" BasedOn="{StaticResource styCtlBase}">
-                    <Setter Property="Grid.Column" Value="0"/>
                     <Setter Property="Margin" Value="4 4 20 4"/>
                 </Style>
 
-                <Style TargetType="TextBox" BasedOn="{StaticResource styCtlBase}">
+                <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                     <Setter Property="Grid.Column" Value="1"/>
+                    <Setter Property="FontSize" Value="16"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
                     <Setter Property="Margin" Value="4"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TextBox">
-                                <Border BorderBrush="SteelBlue" BorderThickness="2"
-                                        Background="{xx:LinearGradientBrush2 LightBlue, White, 90}" CornerRadius="5">
-                                    <ScrollViewer x:Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
                 </Style>
 
-                <Style x:Key="stySliderThumb" TargetType="Thumb">
-                    <Setter Property="Cursor" Value="Hand"/>
-                    <Setter Property="Focusable" Value="False"/>
-                    <Setter Property="OverridesDefaultStyle" Value="True"/>
-                    <Setter Property="Height" Value="20"/>
-                    <Setter Property="Width" Value="20"/>
-                    <Setter Property="Foreground" Value="Gray"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type Thumb}">
-                                <Ellipse x:Name="figThumb">
-                                    <Ellipse.Fill>
-                                        <RadialGradientBrush GradientOrigin=".3 .35">
-                                            <GradientStop Color="WhiteSmoke" Offset="0.0"/>
-                                            <GradientStop Color="LightSkyBlue" Offset="0.2"/>
-                                            <GradientStop Color="#4598C2" Offset="0.7"/>
-                                            <GradientStop Color="#1C475C" Offset="1.0"/>
-                                        </RadialGradientBrush>
-                                    </Ellipse.Fill>
-                                </Ellipse>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="figThumb" Property="Fill">
-                                            <Setter.Value>
-                                                <RadialGradientBrush GradientOrigin=".3 .35">
-                                                    <GradientStop Color="WhiteSmoke" Offset="0.0"/>
-                                                    <GradientStop Color="PaleGreen" Offset="0.2"/>
-                                                    <GradientStop Color="#54C454" Offset="0.7"/>
-                                                    <GradientStop Color="#245D24" Offset="1.0"/>
-                                                </RadialGradientBrush>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-
-                <Style TargetType="Slider" BasedOn="{StaticResource styCtlBase}">
+                <Style TargetType="Slider" BasedOn="{StaticResource {x:Type Slider}}">
                     <Setter Property="Grid.Column" Value="2"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="Slider">
-                                <Grid>
-                                    <Border x:Name="brdBack" Height="4" Margin="5 0" VerticalAlignment="Center"
-                                            BorderBrush="{xx:LinearGradientBrush2 White, SteelBlue, 90}" BorderThickness="1" CornerRadius="1"/>
-                                    <Track Name="PART_Track">
-                                        <Track.Thumb>
-                                            <Thumb Style="{StaticResource stySliderThumb}"/>
-                                        </Track.Thumb>
-                                    </Track>
-                                </Grid>
-                                <ControlTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding IsMouseOver, ElementName=PART_Track}" Value="True">
-                                        <Setter TargetName="brdBack" Property="BorderBrush" Value="{xx:LinearGradientBrush2 White, YellowGreen, 90}"/>
-                                        <Setter TargetName="brdBack" Property="BorderThickness" Value="2"/>
-                                    </DataTrigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Margin" Value="4"/>
                 </Style>
 
-                <Style TargetType="Image">
+                <Style TargetType="Image" BasedOn="{StaticResource styImgValidationIcon}">
                     <Setter Property="Grid.Column" Value="3"/>
-                    <Setter Property="Stretch" Value="None"/>
-                    <Setter Property="Source" Value="Resources\Warning@16.png"/>
-                    <Setter Property="dlg:ValidationProps.Message" Value="{xx:SelfBinding (dlg:ValidationProps.ValidatesControl).(Validation.Errors), Converter={StaticResource convErrorContent}, FallbackValue={x:Null}}"/>
-                    <Setter Property="Visibility" Value="{xx:SelfBinding (dlg:ValidationProps.ValidatesControl).(Validation.HasError), Converter={StaticResource convBoolToVisHidden}}"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Margin" Value="4"/>
                 </Style>
 
             </Grid.Resources>
@@ -402,7 +297,7 @@
             <Border BorderBrush="SteelBlue" BorderThickness="2"
                     Background="{xx:LinearGradientBrush2 #BAE1FA, LightSkyBlue, 90}" CornerRadius="5"
                     Effect="{xx:DropShadowEffect Opacity=0.3, ShadowDepth=3, BlurRadius=5}"
-                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                    HorizontalAlignment="Center" VerticalAlignment="Center" UseLayoutRounding="True">
                 <Grid Margin="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
