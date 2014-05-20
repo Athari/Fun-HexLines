@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HakunaMatata.HexLines", "HakunaMatata.HexLines\HakunaMatata.HexLines.csproj", "{BF7C0FF1-4678-4800-A399-B2E442D894B1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{0593F346-DF88-4039-95A8-3389C925EA6C}"
@@ -35,7 +37,6 @@ Global
 		{62730B23-450C-4B93-8D5C-F7037DB6D263}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62730B23-450C-4B93-8D5C-F7037DB6D263}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6B7272D1-B052-4B4D-B4F2-9C11E5BE1C89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6B7272D1-B052-4B4D-B4F2-9C11E5BE1C89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B7272D1-B052-4B4D-B4F2-9C11E5BE1C89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B7272D1-B052-4B4D-B4F2-9C11E5BE1C89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
